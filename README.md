@@ -4,7 +4,7 @@
 
 `Community Notes raw TSV -> official-style matrix factorization clustering -> MF-continuous persona agents -> LLM multi-agent voting -> official-style MF comparison -> calibrated aggregation with nested CV`
 
-仓库里没有放旧版 KMeans、prompt 试错、无关外部 baseline 或临时日志。当前可复算的完整 agent 数量为 12、24、36、48；72-agent 的 persona variant 已保留，但对应 LLM 投票在整理时尚未完成。
+仓库里当前可复算的完整 agent 数量为 12、24、36、48；72-agent 的 persona variant 已保留，但是我还没有算
 
 ## Core results
 
