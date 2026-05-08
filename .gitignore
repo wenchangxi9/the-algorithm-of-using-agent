@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.env
+.venv/
+venv/
+*.log
+*.pid
+run_pid.txt
+run_status.txt
+batch_status.txt
+data/raw_communitynotes/**
+!data/raw_communitynotes/README.md
+artifacts/**/run_stdout.log
+artifacts/**/run_stderr.log
