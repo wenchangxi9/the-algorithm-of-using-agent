@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import StratifiedKFold
 
 import analyze_llm_agent_count_ablation_official as official_mod
 
@@ -32,6 +33,13 @@ def parse_args() -> argparse.Namespace:
             "This is separate because each repeat fits a rank-1 MF resolver."
         ),
     )
+    parser.add_argument(
+        "--calibrated-repeats",
+        type=int,
+        default=500,
+        help="Monte Carlo repeats for calibrated selective screening over sampled helpful-share scores.",
+    )
+    parser.add_argument("--calibrated-coverage-target", type=float, default=0.65)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument(
         "--output-summary-csv",
@@ -190,6 +198,155 @@ def evaluate_parent_binomial(
             helpful_votes += rng.binomial(int(count), p_matrix[:, parent_idx])
         y_pred = (helpful_votes / total_agents >= 0.5).astype(int)
         rows.append({"repeat": repeat, **confusion_metrics(y_true, y_pred)})
+    return rows
+
+
+def best_selective_thresholds(
+    y_true: np.ndarray,
+    score: np.ndarray,
+    min_coverage: float,
+) -> tuple[float, float]:
+    low_grid = np.arange(0.00, 0.51, 0.01, dtype=float)
+    high_grid = np.arange(0.50, 0.96, 0.01, dtype=float)
+    low_values, high_values = np.meshgrid(low_grid, high_grid, indexing="ij")
+    lows = low_values.ravel()
+    highs = high_values.ravel()
+    valid_pair = lows < highs
+    lows = lows[valid_pair]
+    highs = highs[valid_pair]
+
+    scores = score.reshape(1, -1)
+    y = y_true.reshape(1, -1).astype(int)
+    predict_zero = scores <= lows.reshape(-1, 1)
+    predict_one = scores >= highs.reshape(-1, 1)
+    resolved = predict_zero | predict_one
+    resolved_count = resolved.sum(axis=1)
+    valid = resolved_count > 0
+    if min_coverage > 0:
+        valid &= (resolved_count / float(len(score))) >= min_coverage
+    if not valid.any():
+        return 0.0, 1.0
+
+    tp = (predict_one & (y == 1)).sum(axis=1).astype(float)
+    tn = (predict_zero & (y == 0)).sum(axis=1).astype(float)
+    fp = (predict_one & (y == 0)).sum(axis=1).astype(float)
+    fn = (predict_zero & (y == 1)).sum(axis=1).astype(float)
+    accuracy = np.divide(tp + tn, resolved_count, out=np.zeros_like(tp), where=resolved_count > 0)
+    recall_not_helpful = np.divide(tn, tn + fp, out=np.zeros_like(tn), where=(tn + fp) > 0)
+    recall_helpful = np.divide(tp, tp + fn, out=np.zeros_like(tp), where=(tp + fn) > 0)
+    balanced = (recall_not_helpful + recall_helpful) / 2.0
+    coverage = resolved_count / float(len(score))
+
+    invalid = ~valid
+    accuracy[invalid] = -1.0
+    balanced[invalid] = -1.0
+    coverage[invalid] = -1.0
+    # Lexicographic argmax: accuracy first, balanced accuracy second, coverage third.
+    best_idx = int(np.lexsort((coverage, balanced, accuracy))[-1])
+    return float(lows[best_idx]), float(highs[best_idx])
+
+
+def apply_selective_thresholds(
+    y_true: np.ndarray,
+    score: np.ndarray,
+    low: float,
+    high: float,
+) -> dict[str, float | int]:
+    pred = np.full(len(score), -1, dtype=int)
+    pred[score <= low] = 0
+    pred[score >= high] = 1
+    mask = pred >= 0
+    if mask.any():
+        metrics = confusion_metrics(y_true[mask], pred[mask])
+    else:
+        metrics = {
+            "accuracy": 0.0,
+            "balanced_accuracy": 0.0,
+            "recall_not_helpful": 0.0,
+            "recall_helpful": 0.0,
+            "tn": 0,
+            "fp": 0,
+            "fn": 0,
+            "tp": 0,
+        }
+    metrics["coverage"] = float(mask.mean())
+    metrics["resolved_notes"] = int(mask.sum())
+    return metrics
+
+
+def crossfit_calibrated_screening(
+    y_true: np.ndarray,
+    score: np.ndarray,
+    coverage_target: float,
+    folds: int,
+    seed: int,
+) -> dict[str, float | int]:
+    cv = StratifiedKFold(n_splits=folds, shuffle=True, random_state=seed)
+    fold_rows: list[dict[str, float | int]] = []
+    for train_idx, test_idx in cv.split(score.reshape(-1, 1), y_true):
+        low, high = best_selective_thresholds(y_true[train_idx], score[train_idx], coverage_target)
+        row = apply_selective_thresholds(y_true[test_idx], score[test_idx], low, high)
+        fold_rows.append(row)
+
+    pooled_tn = int(sum(int(row["tn"]) for row in fold_rows))
+    pooled_fp = int(sum(int(row["fp"]) for row in fold_rows))
+    pooled_fn = int(sum(int(row["fn"]) for row in fold_rows))
+    pooled_tp = int(sum(int(row["tp"]) for row in fold_rows))
+    pooled_y = np.array([1] * (pooled_tp + pooled_fn) + [0] * (pooled_tn + pooled_fp), dtype=int)
+    pooled_pred = np.array([1] * pooled_tp + [0] * pooled_fn + [0] * pooled_tn + [1] * pooled_fp, dtype=int)
+    metrics = confusion_metrics(pooled_y, pooled_pred) if len(pooled_y) else confusion_metrics(np.array([], dtype=int), np.array([], dtype=int))
+    resolved_notes = pooled_tn + pooled_fp + pooled_fn + pooled_tp
+    metrics["coverage"] = float(resolved_notes / len(y_true))
+    metrics["resolved_notes"] = int(resolved_notes)
+    return metrics
+
+
+def sample_parent_helpful_share(
+    p_matrix: np.ndarray,
+    parent_counts: np.ndarray,
+    rng: np.random.Generator,
+) -> np.ndarray:
+    helpful_votes = np.zeros(p_matrix.shape[0], dtype=int)
+    for parent_idx, count in enumerate(parent_counts):
+        helpful_votes += rng.binomial(int(count), p_matrix[:, parent_idx])
+    return helpful_votes / float(parent_counts.sum())
+
+
+def sample_agent_helpful_share(
+    p_matrix: np.ndarray,
+    rng: np.random.Generator,
+) -> np.ndarray:
+    return (rng.random(p_matrix.shape) < p_matrix).mean(axis=1)
+
+
+def evaluate_calibrated_screening(
+    y_true: np.ndarray,
+    method: str,
+    repeats: int,
+    rng: np.random.Generator,
+    coverage_target: float,
+    p_matrix: np.ndarray,
+    parent_counts: np.ndarray | None = None,
+    folds: int = 5,
+) -> list[dict[str, float | int]]:
+    rows: list[dict[str, float | int]] = []
+    for repeat in range(repeats):
+        if method == "parent_cluster_binomial":
+            if parent_counts is None:
+                raise ValueError("parent_counts is required for parent_cluster_binomial")
+            score = sample_parent_helpful_share(p_matrix, parent_counts, rng)
+        elif method == "representative_agent_bernoulli":
+            score = sample_agent_helpful_share(p_matrix, rng)
+        else:
+            raise ValueError(f"Unknown sampling method: {method}")
+        metrics = crossfit_calibrated_screening(
+            y_true=y_true,
+            score=score,
+            coverage_target=coverage_target,
+            folds=folds,
+            seed=42,
+        )
+        rows.append({"repeat": repeat, **metrics})
     return rows
 
 
@@ -374,6 +531,46 @@ def resolved_method_summary(
     }
 
 
+def calibrated_method_summary(
+    repeat_df: pd.DataFrame,
+    agent_count: int,
+    method: str,
+    notes_evaluated: int,
+    coverage_target: float,
+) -> dict[str, float | int | str]:
+    acc = summarize(repeat_df["accuracy"].astype(float).tolist())
+    bal = summarize(repeat_df["balanced_accuracy"].astype(float).tolist())
+    cov = summarize(repeat_df["coverage"].astype(float).tolist())
+    resolved = summarize(repeat_df["resolved_notes"].astype(float).tolist())
+    return {
+        "agent_count": agent_count,
+        "method": method,
+        "repeats": int(len(repeat_df)),
+        "notes_evaluated": int(notes_evaluated),
+        "coverage_target": float(coverage_target),
+        "calibrated_resolved_accuracy_mean": acc["mean"],
+        "calibrated_resolved_accuracy_std": acc["std"],
+        "calibrated_resolved_accuracy_ci95_low": acc["ci95_low"],
+        "calibrated_resolved_accuracy_ci95_high": acc["ci95_high"],
+        "calibrated_resolved_accuracy_p10": acc["p10"],
+        "calibrated_resolved_accuracy_p50": acc["p50"],
+        "calibrated_resolved_accuracy_p90": acc["p90"],
+        "calibrated_resolved_balanced_accuracy_mean": bal["mean"],
+        "calibrated_resolved_balanced_accuracy_std": bal["std"],
+        "calibrated_resolved_balanced_accuracy_ci95_low": bal["ci95_low"],
+        "calibrated_resolved_balanced_accuracy_ci95_high": bal["ci95_high"],
+        "coverage_mean": cov["mean"],
+        "coverage_std": cov["std"],
+        "coverage_ci95_low": cov["ci95_low"],
+        "coverage_ci95_high": cov["ci95_high"],
+        "coverage_p10": cov["p10"],
+        "coverage_p50": cov["p50"],
+        "coverage_p90": cov["p90"],
+        "resolved_notes_mean": resolved["mean"],
+        "resolved_notes_p50": resolved["p50"],
+    }
+
+
 def main() -> None:
     args = parse_args()
     official_mod.mf_mod.log = lambda _message: None
@@ -383,6 +580,8 @@ def main() -> None:
     summaries: list[dict[str, float | int | str]] = []
     all_resolved_repeats: list[pd.DataFrame] = []
     resolved_summaries: list[dict[str, float | int | str]] = []
+    all_calibrated_repeats: list[pd.DataFrame] = []
+    calibrated_summaries: list[dict[str, float | int | str]] = []
     official_args = argparse.Namespace(
         min_ratings_per_rater=10,
         min_raters_per_note=5,
@@ -453,6 +652,29 @@ def main() -> None:
                     len(notes),
                 )
             )
+        if args.calibrated_repeats > 0:
+            parent_calibrated_rows = evaluate_calibrated_screening(
+                y_true=y_true,
+                method="parent_cluster_binomial",
+                repeats=args.calibrated_repeats,
+                rng=np.random.default_rng(args.seed + count * 5003),
+                coverage_target=args.calibrated_coverage_target,
+                p_matrix=parent_p,
+                parent_counts=parent_counts,
+            )
+            parent_calibrated_df = pd.DataFrame(parent_calibrated_rows)
+            parent_calibrated_df.insert(0, "method", "parent_cluster_binomial")
+            parent_calibrated_df.insert(0, "agent_count", count)
+            all_calibrated_repeats.append(parent_calibrated_df)
+            calibrated_summaries.append(
+                calibrated_method_summary(
+                    parent_calibrated_df,
+                    count,
+                    "parent_cluster_binomial",
+                    len(notes),
+                    args.calibrated_coverage_target,
+                )
+            )
 
         agent_p, agent_missing = representative_probability_matrix(notes, votes)
         expected_agent_share = agent_p.mean(axis=1)
@@ -499,27 +721,62 @@ def main() -> None:
                     len(notes),
                 )
             )
+        if args.calibrated_repeats > 0:
+            agent_calibrated_rows = evaluate_calibrated_screening(
+                y_true=y_true,
+                method="representative_agent_bernoulli",
+                repeats=args.calibrated_repeats,
+                rng=np.random.default_rng(args.seed + count * 6007),
+                coverage_target=args.calibrated_coverage_target,
+                p_matrix=agent_p,
+            )
+            agent_calibrated_df = pd.DataFrame(agent_calibrated_rows)
+            agent_calibrated_df.insert(0, "method", "representative_agent_bernoulli")
+            agent_calibrated_df.insert(0, "agent_count", count)
+            all_calibrated_repeats.append(agent_calibrated_df)
+            calibrated_summaries.append(
+                calibrated_method_summary(
+                    agent_calibrated_df,
+                    count,
+                    "representative_agent_bernoulli",
+                    len(notes),
+                    args.calibrated_coverage_target,
+                )
+            )
 
     summary_df = pd.DataFrame(summaries).sort_values(["agent_count", "method"]).reset_index(drop=True)
     repeats_df = pd.concat(all_repeats, ignore_index=True)
-    resolved_summary_df = pd.DataFrame(resolved_summaries).sort_values(["agent_count", "method"]).reset_index(drop=True)
+    resolved_summary_df = pd.DataFrame(resolved_summaries)
+    if not resolved_summary_df.empty:
+        resolved_summary_df = resolved_summary_df.sort_values(["agent_count", "method"]).reset_index(drop=True)
     resolved_repeats_df = pd.concat(all_resolved_repeats, ignore_index=True) if all_resolved_repeats else pd.DataFrame()
+    calibrated_summary_df = pd.DataFrame(calibrated_summaries)
+    if not calibrated_summary_df.empty:
+        calibrated_summary_df = calibrated_summary_df.sort_values(["agent_count", "method"]).reset_index(drop=True)
+    calibrated_repeats_df = pd.concat(all_calibrated_repeats, ignore_index=True) if all_calibrated_repeats else pd.DataFrame()
 
     summary_path = args.output_summary_csv if args.output_summary_csv.is_absolute() else repo_root / args.output_summary_csv
     repeats_path = args.output_repeats_csv if args.output_repeats_csv.is_absolute() else repo_root / args.output_repeats_csv
     resolved_summary_path = summary_path.with_name("probability_sampling_resolved_summary.csv")
     resolved_repeats_path = repeats_path.with_name("probability_sampling_resolved_repeats.csv")
+    calibrated_summary_path = summary_path.with_name("probability_sampling_calibrated_summary.csv")
+    calibrated_repeats_path = repeats_path.with_name("probability_sampling_calibrated_repeats.csv")
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     summary_df.to_csv(summary_path, index=False, encoding="utf-8-sig")
     repeats_df.to_csv(repeats_path, index=False, encoding="utf-8-sig")
     resolved_summary_df.to_csv(resolved_summary_path, index=False, encoding="utf-8-sig")
     resolved_repeats_df.to_csv(resolved_repeats_path, index=False, encoding="utf-8-sig")
+    calibrated_summary_df.to_csv(calibrated_summary_path, index=False, encoding="utf-8-sig")
+    calibrated_repeats_df.to_csv(calibrated_repeats_path, index=False, encoding="utf-8-sig")
 
     print(summary_path)
     print(summary_df.to_string(index=False))
     if not resolved_summary_df.empty:
         print(resolved_summary_path)
         print(resolved_summary_df.to_string(index=False))
+    if not calibrated_summary_df.empty:
+        print(calibrated_summary_path)
+        print(calibrated_summary_df.to_string(index=False))
 
 
 if __name__ == "__main__":

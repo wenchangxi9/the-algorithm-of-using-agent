@@ -103,9 +103,12 @@ The repository also includes a sampling experiment that asks whether increasing 
 
 The key idea is to treat each MF parent cluster as a probabilistic rater. For each note-cluster pair, the observed LLM judgments inside the cluster are converted into a cluster-level Helpful probability using each judgment's confidence. Given an agent budget, virtual raters are allocated according to the existing MF-continuous roster, and votes are sampled from a Binomial distribution.
 
-This produces synthetic multi-agent panels under the same 12/24/36/48 budgets. The experiment is evaluated in two ways:
+This produces synthetic multi-agent panels under the same 12/24/36/48 budgets. The experiment is evaluated in three ways:
 
 - full-coverage majority vote over sampled synthetic panels;
 - official-style resolved evaluation, where each sampled vote matrix is passed through the rank-1 MF resolver to produce CRH / CRNH / NMR.
+- calibrated selective screening, where the sampled helpful-share score is passed through cross-fit low/high thresholds under a target coverage constraint.
 
-Empirically, probability sampling does not reproduce the gain from calibrated aggregation. This is useful: it suggests that most of the improvement is not simply from creating more votes by stochastic resampling, but from preserving structured agent heterogeneity and learning a calibrated aggregation rule over the agents' quality signals.
+The calibrated sampling variant is intentionally simple: it does not train the full logistic model over confidence, evidence, note-needed, core-claim, failure-signal, and disagreement features. It only asks whether a sampled helpful-share score can be made selective in a statistically disciplined way. Thresholds are selected on training folds and then applied to held-out folds, so the resolved accuracy is not obtained by tuning directly on the evaluated notes.
+
+Empirically, probability sampling with calibrated screening improves over full-coverage sampled majority vote, but it still does not reproduce the gain from real-agent calibrated aggregation. This is useful: it suggests that most of the improvement is not simply from creating more votes by stochastic resampling, but from preserving structured agent heterogeneity and learning a calibrated aggregation rule over the agents' quality signals.

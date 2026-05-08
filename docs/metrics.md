@@ -158,3 +158,34 @@ The sampling experiment also has an official-style resolved version. In each Mon
 5. Compute accuracy only on CRH/CRNH resolved notes and report coverage.
 
 This makes probability sampling comparable to the official-style resolved baseline. The current repository uses 300 repeats for this resolved sampling metric because every repeat refits the MF resolver.
+
+## Probability sampling calibrated resolved accuracy
+
+The probability-sampling experiment also applies the same selective-resolution idea used by the calibrated aggregator, but in a deliberately narrower form.
+
+In each Monte Carlo repeat:
+
+1. Sample a synthetic panel from the cluster-level Helpful probabilities.
+2. Convert the sampled panel into a note-level helpful-share score:
+
+```text
+score_i = sampled Helpful votes for note i / sampled total votes for note i
+```
+
+3. Use stratified 5-fold cross-fitting. Inside each fold, choose low/high thresholds on the training split only:
+
+```text
+if score_i >= high_threshold:
+    resolve as Helpful
+elif score_i <= low_threshold:
+    resolve as Not Helpful
+else:
+    leave unresolved
+```
+
+4. Apply those thresholds to the held-out fold and pool the fold-level resolved predictions.
+5. Report accuracy only on the resolved subset, together with coverage.
+
+The threshold search uses a minimum target coverage, currently 0.65, and selects the threshold pair that maximizes training-fold resolved accuracy, then balanced accuracy, then coverage. The held-out fold is not used to select thresholds.
+
+This metric should not be described as the full calibrated logistic aggregator. It is a calibrated selective screening rule over the sampled helpful-share score only. Its purpose is to test whether stochastic resampling plus selective thresholding can recover the gain of the real multi-agent calibrated pipeline. In the current results it improves over raw probability-sampling majority vote, but it remains below the real-agent calibrated resolved result.
