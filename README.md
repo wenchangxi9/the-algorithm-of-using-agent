@@ -20,7 +20,7 @@
 Interpretation:
 
 - `raw majority full accuracy`:直接把 agent 的 Helpful/Not Helpful 多数票当预测。
-- `probability sampling full accuracy`:把每个 MF 父 cluster 建模为概率评分者，用 LLM rating 和 confidence 得到 `P(Helpful)`，再在同一 agent budget 下做 5000 次 Binomial Monte Carlo 采样。表中的 95% CI 只反映 Monte Carlo 采样随机性。
+- `probability sampling full accuracy`:把每个 MF cluster 建模为概率评分者，用 LLM rating 和 confidence 得到 `P(Helpful)`，再在同一 agent budget 下做 5000 次 Binomial Monte Carlo 采样。表中的 95% CI 只反映 Monte Carlo 采样随机性。
 - `probability sampling MF-resolved accuracy`:对采样出的 synthetic votes 再运行同一个 official-style MF resolver，得到 CRH / CRNH / NMR。这里使用 300 次 Monte Carlo repeats，因为每次 resolved evaluation 都需要重新拟合 rank-1 MF。
 - `probability sampling calibrated resolved accuracy`:对 probability sampling 得到的 helpful-share score 再加一层 calibrated low/high threshold screening。阈值在 5-fold cross-fitting 的训练折里选择，测试折只负责评估；这里使用 500 次 Monte Carlo repeats，目标 coverage 是 0.65。这个指标不是完整的 logistic calibrated aggregation，因为它只用 sampled helpful-share 一个分数。
 - `official-style MF resolved accuracy`:用 rank-1 MF 和阈值模拟 Community Notes 的 resolved 机制，只在 resolved subset 上计算准确率。
