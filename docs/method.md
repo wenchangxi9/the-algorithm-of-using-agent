@@ -96,3 +96,13 @@ Evaluation uses nested cross-validation:
 - the held-out outer fold is never used for threshold selection.
 
 This is why the calibrated result is a stronger scientific claim than just trying many thresholds and reporting the best one.
+
+## 6. Probabilistic cluster-level sampling
+
+The repository also includes a sampling experiment that asks whether increasing the number of agents can be approximated by stochastic sampling rather than additional LLM calls.
+
+The key idea is to treat each MF parent cluster as a probabilistic rater. For each note-cluster pair, the observed LLM judgments inside the cluster are converted into a cluster-level Helpful probability using each judgment's confidence. Given an agent budget, virtual raters are allocated according to the existing MF-continuous roster, and votes are sampled from a Binomial distribution.
+
+This produces synthetic multi-agent panels under the same 12/24/36/48 budgets. The experiment is deliberately evaluated as a full-coverage majority-vote simulation, not as a replacement for calibrated nested CV.
+
+Empirically, probability sampling does not reproduce the gain from calibrated aggregation. This is useful: it suggests that most of the improvement is not simply from creating more votes by stochastic resampling, but from preserving structured agent heterogeneity and learning a calibrated aggregation rule over the agents' quality signals.

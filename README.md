@@ -8,18 +8,19 @@
 
 ## Core results
 
-当前 258-note evaluation pool 上的核心结果如下。注意四类指标的分母不完全一样：
+当前 258-note evaluation pool 上的核心结果如下。注意各类指标的分母和含义不完全一样：
 
-| agents | raw majority full accuracy | official-style MF resolved accuracy | official coverage | calibrated full nested-CV accuracy | calibrated resolved accuracy @~65% coverage | calibrated coverage |
-|---:|---:|---:|---:|---:|---:|---:|
-| 12 | 75.69% | 83.33% | 66 / 258 | 78.68% | 90.17% | 173 / 258 |
-| 24 | 74.81% | 80.88% | 68 / 258 | 81.01% | 91.62% | 167 / 258 |
-| 36 | 74.03% | 80.30% | 66 / 258 | 82.17% | 89.70% | 165 / 258 |
-| 48 | 74.03% | 83.16% | 95 / 258 | 84.11% | 93.49% | 169 / 258 |
+| agents | raw majority full accuracy | probability sampling full accuracy, mean | MC 95% CI | official-style MF resolved accuracy | official coverage | calibrated full nested-CV accuracy | calibrated resolved accuracy @~65% coverage | calibrated coverage |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 12 | 75.69% | 73.90% | [73.85%, 73.95%] | 83.33% | 66 / 258 | 78.68% | 90.17% | 173 / 258 |
+| 24 | 74.81% | 74.81% | [74.77%, 74.84%] | 80.88% | 68 / 258 | 81.01% | 91.62% | 167 / 258 |
+| 36 | 74.03% | 74.25% | [74.22%, 74.28%] | 80.30% | 66 / 258 | 82.17% | 89.70% | 165 / 258 |
+| 48 | 74.03% | 73.82% | [73.80%, 73.85%] | 83.16% | 95 / 258 | 84.11% | 93.49% | 169 / 258 |
 
 Interpretation:
 
 - `raw majority full accuracy`:直接把 agent 的 Helpful/Not Helpful 多数票当预测。
+- `probability sampling full accuracy`:把每个 MF 父 cluster 建模为概率评分者，用 LLM rating 和 confidence 得到 `P(Helpful)`，再在同一 agent budget 下做 5000 次 Binomial Monte Carlo 采样。表中的 95% CI 只反映 Monte Carlo 采样随机性。
 - `official-style MF resolved accuracy`:用 rank-1 MF 和阈值模拟 Community Notes 的 resolved 机制，只在 resolved subset 上计算准确率。
 - `calibrated full nested-CV accuracy`:把 agent 输出的结构化信号聚合成特征，用外层 5-fold nested CV 在全量 258 条 note 上评估。
 - `calibrated resolved accuracy`:同一个 calibrated model 加低/高阈值，只对模型最确定的 note 给 resolved 判断。
@@ -35,6 +36,7 @@ src/
   run_llm_persona_multiagent_eval.py
   analyze_llm_agent_count_ablation_official.py
   optimize_llm_multiagent_aggregation.py
+  evaluate_probability_sampling.py
   summarize_core_results.py
 
 scripts/
@@ -87,6 +89,19 @@ The regenerated summary is written to:
 
 ```text
 artifacts/comparison_tables/core_results_summary.csv
+```
+
+To recompute the probability-sampling comparison:
+
+```powershell
+python src/evaluate_probability_sampling.py --agent-counts "12,24,36,48" --repeats 5000 --seed 42
+```
+
+The regenerated sampling summaries are written to:
+
+```text
+artifacts/comparison_tables/probability_sampling_summary.csv
+artifacts/comparison_tables/probability_sampling_repeats.csv
 ```
 
 ## Run a new LLM evaluation

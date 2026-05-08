@@ -107,3 +107,42 @@ For each outer fold:
 5. Evaluate once on the untouched outer-test split.
 
 This prevents the resolved thresholds and model hyperparameters from being tuned on the same examples used for final evaluation.
+
+## Probability sampling full accuracy
+
+Probability sampling tests whether a larger panel can be approximated without additional LLM calls.
+
+For each note-agent judgment, the binary rating and confidence are converted into a Helpful probability:
+
+```text
+if rating = Helpful:
+    p = confidence / 100
+else:
+    p = 1 - confidence / 100
+```
+
+The main reported sampling method is `parent_cluster_binomial`. For each note and MF parent cluster, agent-level probabilities are averaged into:
+
+```text
+p_ic = P(Helpful | note i, parent cluster c)
+```
+
+Given an agent budget, each parent cluster has `m_c` virtual raters. Synthetic Helpful votes are sampled as:
+
+```text
+V_ic ~ Binomial(m_c, p_ic)
+```
+
+The sampled full prediction is:
+
+```text
+predict Helpful if sum_c V_ic / sum_c m_c >= 0.5
+```
+
+Sampling is repeated 5000 times. The reported mean accuracy is the Monte Carlo mean over repeated synthetic panels, and the 95% CI is:
+
+```text
+mean +/- 1.96 * std / sqrt(repeats)
+```
+
+This CI quantifies Monte Carlo sampling uncertainty only. It is not a confidence interval for generalization to a new note population.
