@@ -20,7 +20,7 @@
 Interpretation:
 
 - `raw majority full accuracy`:直接把 agent 的 Helpful/Not Helpful 多数票当预测。
-- `probability sampling full accuracy`:把每个 MF 父 cluster 建模为概率评分者，用 LLM rating 和 confidence 得到 `P(Helpful)`，再在同一 agent budget 下做 5000 次 Binomial Monte Carlo 采样。表中的 95% CI 只反映 Monte Carlo 采样随机性。
+- `probability sampling full accuracy`:把每个 MF cluster 建模为概率评分者，用 LLM rating 和 confidence 得到 `P(Helpful)`，再在同一 agent budget 下做 5000 次 Binomial Monte Carlo 采样。表中的 95% CI 只反映 Monte Carlo 采样随机性。
 - `probability sampling resolved accuracy`:对采样出的 synthetic votes 再运行同一个 official-style MF resolver，得到 CRH / CRNH / NMR。这里使用 300 次 Monte Carlo repeats，因为每次 resolved evaluation 都需要重新拟合 rank-1 MF。
 - `official-style MF resolved accuracy`:用 rank-1 MF 和阈值模拟 Community Notes 的 resolved 机制，只在 resolved subset 上计算准确率。
 - `calibrated full nested-CV accuracy`:把 agent 输出的结构化信号聚合成特征，用外层 5-fold nested CV 在全量 258 条 note 上评估。
