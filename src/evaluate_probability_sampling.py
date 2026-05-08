@@ -6,6 +6,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+import analyze_llm_agent_count_ablation_official as official_mod
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -21,6 +23,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--date-tag", type=str, default="20260507")
     parser.add_argument("--run-tag", type=str, default="run1")
     parser.add_argument("--repeats", type=int, default=5000)
+    parser.add_argument(
+        "--resolved-repeats",
+        type=int,
+        default=300,
+        help=(
+            "Monte Carlo repeats for official-style resolved evaluation. "
+            "This is separate because each repeat fits a rank-1 MF resolver."
+        ),
+    )
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument(
         "--output-summary-csv",
@@ -182,6 +193,28 @@ def evaluate_parent_binomial(
     return rows
 
 
+def sample_parent_votes(
+    note_ids: list[str],
+    p_matrix: np.ndarray,
+    parent_counts: np.ndarray,
+    rng: np.random.Generator,
+) -> pd.DataFrame:
+    rows: list[dict[str, object]] = []
+    for parent_idx, count in enumerate(parent_counts):
+        probs = p_matrix[:, parent_idx]
+        for local_idx in range(int(count)):
+            draws = (rng.random(len(note_ids)) < probs).astype(np.int8)
+            rows.extend(
+                {
+                    "noteId": note_id,
+                    "agent_id": f"parent_{parent_idx:02d}_sample_{local_idx + 1:03d}",
+                    "helpful_num": int(draw),
+                }
+                for note_id, draw in zip(note_ids, draws)
+            )
+    return pd.DataFrame(rows)
+
+
 def evaluate_agent_bernoulli(
     y_true: np.ndarray,
     p_matrix: np.ndarray,
@@ -194,6 +227,77 @@ def evaluate_agent_bernoulli(
         helpful_votes = (rng.random(p_matrix.shape) < p_matrix).sum(axis=1)
         y_pred = (helpful_votes / total_agents >= 0.5).astype(int)
         rows.append({"repeat": repeat, **confusion_metrics(y_true, y_pred)})
+    return rows
+
+
+def sample_agent_votes(
+    note_ids: list[str],
+    p_matrix: np.ndarray,
+    rng: np.random.Generator,
+) -> pd.DataFrame:
+    draws = (rng.random(p_matrix.shape) < p_matrix).astype(np.int8)
+    rows: list[dict[str, object]] = []
+    for agent_idx in range(p_matrix.shape[1]):
+        rows.extend(
+            {
+                "noteId": note_id,
+                "agent_id": f"representative_sample_{agent_idx + 1:03d}",
+                "helpful_num": int(draw),
+            }
+            for note_id, draw in zip(note_ids, draws[:, agent_idx])
+        )
+    return pd.DataFrame(rows)
+
+
+def evaluate_resolved_sampling(
+    y_true: np.ndarray,
+    note_ids: list[str],
+    method: str,
+    repeats: int,
+    rng: np.random.Generator,
+    official_args: argparse.Namespace,
+    p_matrix: np.ndarray,
+    parent_counts: np.ndarray | None = None,
+) -> list[dict[str, float | int]]:
+    note_id_array = np.asarray(note_ids, dtype=object)
+    rows: list[dict[str, float | int]] = []
+    for repeat in range(repeats):
+        if method == "parent_cluster_binomial":
+            if parent_counts is None:
+                raise ValueError("parent_counts is required for parent_cluster_binomial")
+            sampled_votes = sample_parent_votes(note_ids, p_matrix, parent_counts, rng)
+        elif method == "representative_agent_bernoulli":
+            sampled_votes = sample_agent_votes(note_ids, p_matrix, rng)
+        else:
+            raise ValueError(f"Unknown sampling method: {method}")
+
+        pred, resolved = official_mod.official_style_predict(
+            sampled_votes,
+            note_id_array,
+            official_args,
+            seed=int(rng.integers(0, np.iinfo(np.int32).max)),
+        )
+        if resolved.any():
+            metrics = confusion_metrics(y_true[resolved], pred[resolved])
+        else:
+            metrics = {
+                "accuracy": 0.0,
+                "balanced_accuracy": 0.0,
+                "recall_not_helpful": 0.0,
+                "recall_helpful": 0.0,
+                "tn": 0,
+                "fp": 0,
+                "fn": 0,
+                "tp": 0,
+            }
+        rows.append(
+            {
+                "repeat": repeat,
+                "resolved_notes": int(resolved.sum()),
+                "coverage": float(resolved.mean()),
+                **metrics,
+            }
+        )
     return rows
 
 
@@ -232,17 +336,74 @@ def method_summary(
     }
 
 
+def resolved_method_summary(
+    repeat_df: pd.DataFrame,
+    agent_count: int,
+    method: str,
+    notes_evaluated: int,
+) -> dict[str, float | int | str]:
+    acc = summarize(repeat_df["accuracy"].astype(float).tolist())
+    bal = summarize(repeat_df["balanced_accuracy"].astype(float).tolist())
+    cov = summarize(repeat_df["coverage"].astype(float).tolist())
+    resolved = summarize(repeat_df["resolved_notes"].astype(float).tolist())
+    return {
+        "agent_count": agent_count,
+        "method": method,
+        "repeats": int(len(repeat_df)),
+        "notes_evaluated": int(notes_evaluated),
+        "resolved_accuracy_mean": acc["mean"],
+        "resolved_accuracy_std": acc["std"],
+        "resolved_accuracy_ci95_low": acc["ci95_low"],
+        "resolved_accuracy_ci95_high": acc["ci95_high"],
+        "resolved_accuracy_p10": acc["p10"],
+        "resolved_accuracy_p50": acc["p50"],
+        "resolved_accuracy_p90": acc["p90"],
+        "resolved_balanced_accuracy_mean": bal["mean"],
+        "resolved_balanced_accuracy_std": bal["std"],
+        "resolved_balanced_accuracy_ci95_low": bal["ci95_low"],
+        "resolved_balanced_accuracy_ci95_high": bal["ci95_high"],
+        "coverage_mean": cov["mean"],
+        "coverage_std": cov["std"],
+        "coverage_ci95_low": cov["ci95_low"],
+        "coverage_ci95_high": cov["ci95_high"],
+        "coverage_p10": cov["p10"],
+        "coverage_p50": cov["p50"],
+        "coverage_p90": cov["p90"],
+        "resolved_notes_mean": resolved["mean"],
+        "resolved_notes_p50": resolved["p50"],
+    }
+
+
 def main() -> None:
     args = parse_args()
+    official_mod.mf_mod.log = lambda _message: None
     repo_root = args.repo_root.resolve()
     counts = parse_counts(args.agent_counts)
     all_repeats: list[pd.DataFrame] = []
     summaries: list[dict[str, float | int | str]] = []
+    all_resolved_repeats: list[pd.DataFrame] = []
+    resolved_summaries: list[dict[str, float | int | str]] = []
+    official_args = argparse.Namespace(
+        min_ratings_per_rater=10,
+        min_raters_per_note=5,
+        als_iterations=12,
+        als_tol=1e-4,
+        global_intercept_lambda=0.15,
+        user_intercept_lambda=0.15,
+        note_intercept_lambda=0.15,
+        user_factor_lambda=0.03,
+        note_factor_lambda=0.03,
+        crh_threshold=0.40,
+        crnh_intercept_threshold=-0.05,
+        crnh_note_factor_multiplier=-0.80,
+        min_rater_agree_ratio=0.66,
+    )
 
     for count in counts:
         notes, votes, roster = load_inputs(repo_root, count, args.model_tag, args.date_tag, args.run_tag)
         notes = notes.copy()
         notes["noteId"] = notes["noteId"].astype(str)
+        note_ids = notes["noteId"].astype(str).tolist()
         y_true = pd.to_numeric(notes["true_label"], errors="coerce").astype(int).to_numpy()
 
         parent_p, parent_counts, parent_missing = parent_probability_matrix(notes, votes, roster)
@@ -269,6 +430,29 @@ def main() -> None:
                 parent_det,
             )
         )
+        if args.resolved_repeats > 0:
+            parent_resolved_rows = evaluate_resolved_sampling(
+                y_true=y_true,
+                note_ids=note_ids,
+                method="parent_cluster_binomial",
+                repeats=args.resolved_repeats,
+                rng=np.random.default_rng(args.seed + count * 3001),
+                official_args=official_args,
+                p_matrix=parent_p,
+                parent_counts=parent_counts,
+            )
+            parent_resolved_df = pd.DataFrame(parent_resolved_rows)
+            parent_resolved_df.insert(0, "method", "parent_cluster_binomial")
+            parent_resolved_df.insert(0, "agent_count", count)
+            all_resolved_repeats.append(parent_resolved_df)
+            resolved_summaries.append(
+                resolved_method_summary(
+                    parent_resolved_df,
+                    count,
+                    "parent_cluster_binomial",
+                    len(notes),
+                )
+            )
 
         agent_p, agent_missing = representative_probability_matrix(notes, votes)
         expected_agent_share = agent_p.mean(axis=1)
@@ -293,18 +477,49 @@ def main() -> None:
                 agent_det,
             )
         )
+        if args.resolved_repeats > 0:
+            agent_resolved_rows = evaluate_resolved_sampling(
+                y_true=y_true,
+                note_ids=note_ids,
+                method="representative_agent_bernoulli",
+                repeats=args.resolved_repeats,
+                rng=np.random.default_rng(args.seed + count * 4001),
+                official_args=official_args,
+                p_matrix=agent_p,
+            )
+            agent_resolved_df = pd.DataFrame(agent_resolved_rows)
+            agent_resolved_df.insert(0, "method", "representative_agent_bernoulli")
+            agent_resolved_df.insert(0, "agent_count", count)
+            all_resolved_repeats.append(agent_resolved_df)
+            resolved_summaries.append(
+                resolved_method_summary(
+                    agent_resolved_df,
+                    count,
+                    "representative_agent_bernoulli",
+                    len(notes),
+                )
+            )
 
     summary_df = pd.DataFrame(summaries).sort_values(["agent_count", "method"]).reset_index(drop=True)
     repeats_df = pd.concat(all_repeats, ignore_index=True)
+    resolved_summary_df = pd.DataFrame(resolved_summaries).sort_values(["agent_count", "method"]).reset_index(drop=True)
+    resolved_repeats_df = pd.concat(all_resolved_repeats, ignore_index=True) if all_resolved_repeats else pd.DataFrame()
 
     summary_path = args.output_summary_csv if args.output_summary_csv.is_absolute() else repo_root / args.output_summary_csv
     repeats_path = args.output_repeats_csv if args.output_repeats_csv.is_absolute() else repo_root / args.output_repeats_csv
+    resolved_summary_path = summary_path.with_name("probability_sampling_resolved_summary.csv")
+    resolved_repeats_path = repeats_path.with_name("probability_sampling_resolved_repeats.csv")
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     summary_df.to_csv(summary_path, index=False, encoding="utf-8-sig")
     repeats_df.to_csv(repeats_path, index=False, encoding="utf-8-sig")
+    resolved_summary_df.to_csv(resolved_summary_path, index=False, encoding="utf-8-sig")
+    resolved_repeats_df.to_csv(resolved_repeats_path, index=False, encoding="utf-8-sig")
 
     print(summary_path)
     print(summary_df.to_string(index=False))
+    if not resolved_summary_df.empty:
+        print(resolved_summary_path)
+        print(resolved_summary_df.to_string(index=False))
 
 
 if __name__ == "__main__":

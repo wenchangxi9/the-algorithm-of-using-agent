@@ -103,6 +103,9 @@ The repository also includes a sampling experiment that asks whether increasing 
 
 The key idea is to treat each MF parent cluster as a probabilistic rater. For each note-cluster pair, the observed LLM judgments inside the cluster are converted into a cluster-level Helpful probability using each judgment's confidence. Given an agent budget, virtual raters are allocated according to the existing MF-continuous roster, and votes are sampled from a Binomial distribution.
 
-This produces synthetic multi-agent panels under the same 12/24/36/48 budgets. The experiment is deliberately evaluated as a full-coverage majority-vote simulation, not as a replacement for calibrated nested CV.
+This produces synthetic multi-agent panels under the same 12/24/36/48 budgets. The experiment is evaluated in two ways:
+
+- full-coverage majority vote over sampled synthetic panels;
+- official-style resolved evaluation, where each sampled vote matrix is passed through the rank-1 MF resolver to produce CRH / CRNH / NMR.
 
 Empirically, probability sampling does not reproduce the gain from calibrated aggregation. This is useful: it suggests that most of the improvement is not simply from creating more votes by stochastic resampling, but from preserving structured agent heterogeneity and learning a calibrated aggregation rule over the agents' quality signals.

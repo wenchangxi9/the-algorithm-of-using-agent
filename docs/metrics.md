@@ -146,3 +146,15 @@ mean +/- 1.96 * std / sqrt(repeats)
 ```
 
 This CI quantifies Monte Carlo sampling uncertainty only. It is not a confidence interval for generalization to a new note population.
+
+## Probability sampling resolved accuracy
+
+The sampling experiment also has an official-style resolved version. In each Monte Carlo repeat:
+
+1. Sample a synthetic binary vote matrix from the cluster-level probabilities.
+2. Treat the sampled votes as an agent-note rating matrix.
+3. Run the same official-style rank-1 MF resolver used for the real agent votes.
+4. Assign CRH / CRNH / NMR.
+5. Compute accuracy only on CRH/CRNH resolved notes and report coverage.
+
+This makes probability sampling comparable to the official-style resolved baseline. The current repository uses 300 repeats for this resolved sampling metric because every repeat refits the MF resolver.
