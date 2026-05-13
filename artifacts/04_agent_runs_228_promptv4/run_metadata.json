@@ -1,0 +1,40 @@
+{
+  "time_utc": "2026-05-13T03:51:16.776689+00:00",
+  "sample_csv": "analysis/combined_success_sample_20260511/combined_success_notes_with_posts.csv",
+  "cluster_summary_csv": "analysis/official_mfcore_rater_clustering_20260510_201855/k_search_2_32_step1/cluster_summary_k16.csv",
+  "model": "gpt-5.4-nano",
+  "base_url": "https://api.gpt.ge/v1",
+  "n_notes": 228,
+  "n_agents": 16,
+  "tasks": 3648,
+  "selection_mode": "balanced_status",
+  "output_schema": [
+    "helpfulnessLevel",
+    "agree",
+    "disagree",
+    "helpfulClear",
+    "helpfulGoodSources",
+    "helpfulAddressesClaim",
+    "helpfulImportantContext",
+    "helpfulUnbiasedLanguage",
+    "notHelpfulIncorrect",
+    "notHelpfulSourcesMissingOrUnreliable",
+    "notHelpfulMissingKeyPoints",
+    "notHelpfulHardToUnderstand",
+    "notHelpfulArgumentativeOrBiased",
+    "notHelpfulIrrelevantSources",
+    "notHelpfulOpinionSpeculation",
+    "notHelpfulNoteNotNeeded",
+    "confidence",
+    "changes_reader_understanding",
+    "rationale"
+  ],
+  "label_space": {
+    "NOT_HELPFUL": 0.0,
+    "HELPFUL": 1.0
+  },
+  "decision_space": [
+    "HELPFUL",
+    "NOT_HELPFUL"
+  ]
+}

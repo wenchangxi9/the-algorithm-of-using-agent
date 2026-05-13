@@ -1,0 +1,251 @@
+﻿distribution,semantic_topic,population_count,sample_count,population_prop,sample_prop,abs_prop_diff,year,status_label
+semantic_topic,crime_law_public_safety,109739,971,0.045725593106847776,0.04855,0.0028244068931522273,,
+semantic_topic,economy_business_crypto,132533,1065,0.055223302847937895,0.05325,0.0019733028479378967,,
+semantic_topic,entertainment_sports_gaming,52217,456,0.021757563812867534,0.0228,0.0010424361871324665,,
+semantic_topic,health_science_medicine,87023,743,0.036260384083481846,0.03715,0.0008896159165181564,,
+semantic_topic,other_misc,229008,1920,0.0954221072382015,0.096,0.0005778927617984958,,
+semantic_topic,platform_media_internet,1240110,10331,0.5167239109863676,0.51655,0.00017391098636765356,,
+semantic_topic,politics_elections_government,281195,2312,0.11716717077502128,0.1156,0.0015671707750212899,,
+semantic_topic,social_culture_identity,97850,812,0.040771733709119407,0.0406,0.00017173370911940933,,
+semantic_topic,war_geopolitics_international,170272,1390,0.07094823344015513,0.0695,0.0014482334401551278,,
+year_semantic_topic,crime_law_public_safety,1038,7,0.00043250955125259015,0.00035,8.250955125259016e-05,2021.0,
+year_semantic_topic,economy_business_crypto,490,4,0.0002041711754467911,0.0002,4.171175446791099e-06,2021.0,
+year_semantic_topic,entertainment_sports_gaming,112,1,4.6667697244980826e-05,5e-05,3.332302755019176e-06,2021.0,
+year_semantic_topic,health_science_medicine,3809,34,0.0015871183821976069,0.0017,0.00011288161780239302,2021.0,
+year_semantic_topic,other_misc,2686,19,0.0011191913821430224,0.00095,0.00016919138214302237,2021.0,
+year_semantic_topic,platform_media_internet,3961,25,0.0016504531141729379,0.00125,0.00040045311417293786,2021.0,
+year_semantic_topic,politics_elections_government,3979,38,0.0016579532798015957,0.0019,0.00024204672019840427,2021.0,
+year_semantic_topic,social_culture_identity,736,9,0.00030667343903844545,0.00045,0.00014332656096155454,2021.0,
+year_semantic_topic,war_geopolitics_international,397,6,0.0001654203196987267,0.0003,0.00013457968030127328,2021.0,
+year_semantic_topic,crime_law_public_safety,1546,15,0.0006441808923280389,0.00075,0.00010581910767196113,2022.0,
+year_semantic_topic,economy_business_crypto,909,14,0.00037875836424721045,0.0007,0.00032124163575278955,2022.0,
+year_semantic_topic,entertainment_sports_gaming,208,2,8.666858059782153e-05,0.0001,1.3331419402178471e-05,2022.0,
+year_semantic_topic,health_science_medicine,2150,17,0.0008958531167563284,0.00085,4.585311675632845e-05,2022.0,
+year_semantic_topic,other_misc,1879,13,0.0007829339564582052,0.00065,0.00013293395645820518,2022.0,
+year_semantic_topic,platform_media_internet,5951,48,0.002479638092007865,0.0024,7.963809200786523e-05,2022.0,
+year_semantic_topic,politics_elections_government,4838,40,0.0020158778506358683,0.002,1.5877850635868246e-05,2022.0,
+year_semantic_topic,social_culture_identity,920,7,0.00038334179879805677,0.00035,3.334179879805677e-05,2022.0,
+year_semantic_topic,war_geopolitics_international,749,5,0.0003120902253258093,0.00025,6.209022532580928e-05,2022.0,
+year_semantic_topic,crime_law_public_safety,17179,154,0.007158074740817193,0.0077,0.0005419252591828076,2023.0,
+year_semantic_topic,economy_business_crypto,16794,117,0.006997654531537572,0.00585,0.0011476545315375715,2023.0,
+year_semantic_topic,entertainment_sports_gaming,6784,62,0.00282672909026741,0.0031,0.00027327090973259,2023.0,
+year_semantic_topic,health_science_medicine,20155,181,0.008398102124755256,0.00905,0.000651897875244745,2023.0,
+year_semantic_topic,other_misc,50141,426,0.020892544710362355,0.0213,0.00040745528963764474,2023.0,
+year_semantic_topic,platform_media_internet,167273,1415,0.06969862251124713,0.07075,0.0010513774887528637,2023.0,
+year_semantic_topic,politics_elections_government,36266,292,0.015111167038272096,0.0146,0.0005111670382720954,2023.0,
+year_semantic_topic,social_culture_identity,15860,139,0.006608479270583892,0.00695,0.0003415207294161079,2023.0,
+year_semantic_topic,war_geopolitics_international,38457,288,0.016024103865627033,0.0144,0.0016241038656270336,2023.0,
+year_semantic_topic,crime_law_public_safety,41668,349,0.017362050078605903,0.01745,8.79499213940968e-05,2024.0,
+year_semantic_topic,economy_business_crypto,69214,549,0.028839803545661635,0.02745,0.0013898035456616359,2024.0,
+year_semantic_topic,entertainment_sports_gaming,22482,204,0.009367706870193383,0.0102,0.0008322931298066182,2024.0,
+year_semantic_topic,health_science_medicine,36943,309,0.015393256601083274,0.01545,5.6743398916725765e-05,2024.0,
+year_semantic_topic,other_misc,101093,855,0.04212301354988256,0.04275,0.0006269864501174463,2024.0,
+year_semantic_topic,platform_media_internet,500677,4219,0.20862002369218988,0.21095,0.002329976307810122,2024.0,
+year_semantic_topic,politics_elections_government,123991,980,0.051664057581271586,0.049,0.002664057581271584,2024.0,
+year_semantic_topic,social_culture_identity,38848,299,0.016187024130116207,0.01495,0.0012370241301162075,2024.0,
+year_semantic_topic,war_geopolitics_international,69028,602,0.028762301834165505,0.0301,0.0013376981658344937,2024.0,
+year_semantic_topic,crime_law_public_safety,34666,323,0.014444485649058083,0.01615,0.0017055143509419179,2025.0,
+year_semantic_topic,economy_business_crypto,37682,316,0.015701180067726497,0.0158,9.881993227350491e-05,2025.0,
+year_semantic_topic,entertainment_sports_gaming,14948,122,0.006228470878731906,0.0061,0.00012847087873190527,2025.0,
+year_semantic_topic,health_science_medicine,17995,152,0.007498082249316339,0.0076,0.00010191775068366105,2025.0,
+year_semantic_topic,other_misc,59150,498,0.024646377607505498,0.0249,0.00025362239249450066,2025.0,
+year_semantic_topic,platform_media_internet,418826,3422,0.17451468719934232,0.1711,0.00341468719934232,2025.0,
+year_semantic_topic,politics_elections_government,82213,711,0.03425617315715722,0.03555,0.0012938268428427796,2025.0,
+year_semantic_topic,social_culture_identity,30305,257,0.012627362187581643,0.01285,0.00022263781241835777,2025.0,
+year_semantic_topic,war_geopolitics_international,39400,325,0.01641702920939504,0.01625,0.0001670292093950386,2025.0,
+year_semantic_topic,crime_law_public_safety,13642,123,0.005684292194785968,0.00615,0.00046570780521403184,2026.0,
+year_semantic_topic,economy_business_crypto,7444,65,0.00310173516331819,0.00325,0.00014826483668180972,2026.0,
+year_semantic_topic,entertainment_sports_gaming,7683,65,0.003201320695832033,0.00325,4.867930416796668e-05,2026.0,
+year_semantic_topic,health_science_medicine,5971,50,0.00248797160937304,0.0025,1.2028390626959897e-05,2026.0,
+year_semantic_topic,other_misc,14059,109,0.00585804603184987,0.00545,0.0004080460318498704,2026.0,
+year_semantic_topic,platform_media_internet,143422,1202,0.0597604863774075,0.0601,0.000339513622592498,2026.0,
+year_semantic_topic,politics_elections_government,29908,251,0.012461941867882916,0.01255,8.805813211708487e-05,2026.0,
+year_semantic_topic,social_culture_identity,11181,101,0.004658852883001166,0.00505,0.0003911471169988339,2026.0,
+year_semantic_topic,war_geopolitics_international,22241,164,0.009267287985943022,0.0082,0.0010672879859430218,2026.0,
+status_semantic_topic,crime_law_public_safety,10369,88,0.0043205120779750555,0.0044,7.948792202494472e-05,,Helpful
+status_semantic_topic,economy_business_crypto,18714,147,0.007797672198594386,0.00735,0.00044767219859438625,,Helpful
+status_semantic_topic,entertainment_sports_gaming,7223,59,0.0030096497964330047,0.00295,5.9649796433004776e-05,,Helpful
+status_semantic_topic,health_science_medicine,7885,73,0.003285489221220302,0.00365,0.00036451077877969803,,Helpful
+status_semantic_topic,other_misc,936,11,0.00039000861269019693,0.00055,0.0001599913873098031,,Helpful
+status_semantic_topic,platform_media_internet,137495,1145,0.05729084850623785,0.05725,4.084850623784636e-05,,Helpful
+status_semantic_topic,politics_elections_government,18606,148,0.007752671204822439,0.0074,0.0003526712048224391,,Helpful
+status_semantic_topic,social_culture_identity,8469,69,0.0035288279282834163,0.00345,7.882792828341634e-05,,Helpful
+status_semantic_topic,war_geopolitics_international,12295,108,0.005123029800241422,0.0054,0.00027697019975857825,,Helpful
+status_semantic_topic,crime_law_public_safety,96221,855,0.0400929687197259,0.04275,0.0026570312802741067,,Need More Ratings
+status_semantic_topic,economy_business_crypto,111943,906,0.046643946720490076,0.0453,0.001343946720490076,,Need More Ratings
+status_semantic_topic,entertainment_sports_gaming,42733,378,0.01780580987830148,0.0189,0.0010941901216985211,,Need More Ratings
+status_semantic_topic,health_science_medicine,77717,662,0.032382798453465846,0.0331,0.0007172015465341519,,Need More Ratings
+status_semantic_topic,other_misc,208845,1750,0.08702067170650019,0.0875,0.0004793282934998089,,Need More Ratings
+status_semantic_topic,platform_media_internet,1062260,8843,0.4426181078165476,0.44215,0.0004681078165476027,,Need More Ratings
+status_semantic_topic,politics_elections_government,254627,2092,0.10609692630712261,0.1046,0.0014969263071226147,,Need More Ratings
+status_semantic_topic,social_culture_identity,85428,708,0.03559578607360912,0.0354,0.00019578607360912215,,Need More Ratings
+status_semantic_topic,war_geopolitics_international,151291,1233,0.06303930878473567,0.06165,0.0013893087847356642,,Need More Ratings
+status_semantic_topic,crime_law_public_safety,3149,28,0.0013121123091468269,0.0014,8.78876908531731e-05,,Not Helpful
+status_semantic_topic,economy_business_crypto,1876,12,0.0007816839288534289,0.0006,0.00018168392885342893,,Not Helpful
+status_semantic_topic,entertainment_sports_gaming,2261,19,0.0009421041381330504,0.00095,7.895861866949612e-06,,Not Helpful
+status_semantic_topic,health_science_medicine,1421,8,0.0005920964087956942,0.0004,0.00019209640879569418,,Not Helpful
+status_semantic_topic,other_misc,19227,159,0.008011426919011128,0.00795,6.142691901112746e-05,,Not Helpful
+status_semantic_topic,platform_media_internet,40355,343,0.016814954663582155,0.01715,0.00033504533641784406,,Not Helpful
+status_semantic_topic,politics_elections_government,7962,72,0.0033175732630762265,0.0036,0.0002824267369237734,,Not Helpful
+status_semantic_topic,social_culture_identity,3953,35,0.0016471197072268678,0.00175,0.0001028802927731322,,Not Helpful
+status_semantic_topic,war_geopolitics_international,6686,49,0.0027858948551780518,0.00245,0.00033589485517805185,,Not Helpful
+year_status_semantic_topic,crime_law_public_safety,49,0,2.041711754467911e-05,0.0,2.041711754467911e-05,2021.0,Helpful
+year_status_semantic_topic,economy_business_crypto,19,0,7.91684149691639e-06,0.0,7.91684149691639e-06,2021.0,Helpful
+year_status_semantic_topic,entertainment_sports_gaming,5,0,2.0833793412937868e-06,0.0,2.0833793412937868e-06,2021.0,Helpful
+year_status_semantic_topic,health_science_medicine,101,3,4.20842626941345e-05,0.00015,0.00010791573730586549,2021.0,Helpful
+year_status_semantic_topic,other_misc,15,0,6.250138023881361e-06,0.0,6.250138023881361e-06,2021.0,Helpful
+year_status_semantic_topic,platform_media_internet,202,0,8.4168525388269e-05,0.0,8.4168525388269e-05,2021.0,Helpful
+year_status_semantic_topic,politics_elections_government,118,1,4.916775245453337e-05,5e-05,8.322475454666299e-07,2021.0,Helpful
+year_status_semantic_topic,social_culture_identity,22,0,9.166869101692662e-06,0.0,9.166869101692662e-06,2021.0,Helpful
+year_status_semantic_topic,war_geopolitics_international,18,0,7.500165628657633e-06,0.0,7.500165628657633e-06,2021.0,Helpful
+year_status_semantic_topic,crime_law_public_safety,983,7,0.0004095923784983585,0.00035,5.959237849835849e-05,2021.0,Need More Ratings
+year_status_semantic_topic,economy_business_crypto,466,4,0.00019417095460858095,0.0002,5.829045391419059e-06,2021.0,Need More Ratings
+year_status_semantic_topic,entertainment_sports_gaming,107,1,4.4584317903687036e-05,5e-05,5.415682096312966e-06,2021.0,Need More Ratings
+year_status_semantic_topic,health_science_medicine,3697,31,0.001540450684952626,0.00155,9.549315047374012e-06,2021.0,Need More Ratings
+year_status_semantic_topic,other_misc,2620,19,0.0010916907748379444,0.00095,0.00014169077483794444,2021.0,Need More Ratings
+year_status_semantic_topic,platform_media_internet,3735,25,0.001556284367946459,0.00125,0.0003062843679464589,2021.0,Need More Ratings
+year_status_semantic_topic,politics_elections_government,3839,37,0.0015996186582453696,0.00185,0.0002503813417546305,2021.0,Need More Ratings
+year_status_semantic_topic,social_culture_identity,708,9,0.0002950065147272002,0.00045,0.00015499348527279978,2021.0,Need More Ratings
+year_status_semantic_topic,war_geopolitics_international,379,6,0.00015792015407006905,0.0003,0.00014207984592993093,2021.0,Need More Ratings
+year_status_semantic_topic,crime_law_public_safety,6,0,2.500055209552544e-06,0.0,2.500055209552544e-06,2021.0,Not Helpful
+year_status_semantic_topic,economy_business_crypto,5,0,2.0833793412937868e-06,0.0,2.0833793412937868e-06,2021.0,Not Helpful
+year_status_semantic_topic,health_science_medicine,11,0,4.583434550846331e-06,0.0,4.583434550846331e-06,2021.0,Not Helpful
+year_status_semantic_topic,other_misc,51,0,2.1250469281196627e-05,0.0,2.1250469281196627e-05,2021.0,Not Helpful
+year_status_semantic_topic,platform_media_internet,24,0,1.0000220838210177e-05,0.0,1.0000220838210177e-05,2021.0,Not Helpful
+year_status_semantic_topic,politics_elections_government,22,0,9.166869101692662e-06,0.0,9.166869101692662e-06,2021.0,Not Helpful
+year_status_semantic_topic,social_culture_identity,6,0,2.500055209552544e-06,0.0,2.500055209552544e-06,2021.0,Not Helpful
+year_status_semantic_topic,crime_law_public_safety,204,2,8.500187712478651e-05,0.0001,1.4998122875213498e-05,2022.0,Helpful
+year_status_semantic_topic,economy_business_crypto,111,0,4.625102137672207e-05,0.0,4.625102137672207e-05,2022.0,Helpful
+year_status_semantic_topic,entertainment_sports_gaming,34,1,1.4166979520797751e-05,5e-05,3.583302047920225e-05,2022.0,Helpful
+year_status_semantic_topic,health_science_medicine,132,1,5.500121461015597e-05,5e-05,5.001214610155969e-06,2022.0,Helpful
+year_status_semantic_topic,other_misc,8,0,3.333406946070059e-06,0.0,3.333406946070059e-06,2022.0,Helpful
+year_status_semantic_topic,platform_media_internet,758,6,0.0003158403081401381,0.0003,1.5840308140138118e-05,2022.0,Helpful
+year_status_semantic_topic,politics_elections_government,450,5,0.00018750414071644082,0.00025,6.249585928355919e-05,2022.0,Helpful
+year_status_semantic_topic,social_culture_identity,72,0,3.0000662514630532e-05,0.0,3.0000662514630532e-05,2022.0,Helpful
+year_status_semantic_topic,war_geopolitics_international,95,1,3.958420748458195e-05,5e-05,1.0415792515418052e-05,2022.0,Helpful
+year_status_semantic_topic,crime_law_public_safety,1325,13,0.0005520955254428536,0.00065,9.79044745571464e-05,2022.0,Need More Ratings
+year_status_semantic_topic,economy_business_crypto,786,14,0.0003275072324513833,0.0007,0.0003724927675486167,2022.0,Need More Ratings
+year_status_semantic_topic,entertainment_sports_gaming,166,1,6.916819413095373e-05,5e-05,1.9168194130953727e-05,2022.0,Need More Ratings
+year_status_semantic_topic,health_science_medicine,1991,16,0.000829601653703186,0.0008,2.960165370318596e-05,2022.0,Need More Ratings
+year_status_semantic_topic,other_misc,1619,10,0.0006745982307109282,0.0005,0.0001745982307109282,2022.0,Need More Ratings
+year_status_semantic_topic,platform_media_internet,5067,42,0.0021112966244671238,0.0021,1.1296624467123893e-05,2022.0,Need More Ratings
+year_status_semantic_topic,politics_elections_government,4286,34,0.0017858727713570342,0.0017,8.587277135703431e-05,2022.0,Need More Ratings
+year_status_semantic_topic,social_culture_identity,827,6,0.00034459094304999235,0.0003,4.459094304999238e-05,2022.0,Need More Ratings
+year_status_semantic_topic,war_geopolitics_international,637,4,0.00026542252808082844,0.0002,6.542252808082843e-05,2022.0,Need More Ratings
+year_status_semantic_topic,crime_law_public_safety,17,0,7.083489760398876e-06,0.0,7.083489760398876e-06,2022.0,Not Helpful
+year_status_semantic_topic,economy_business_crypto,12,0,5.000110419105088e-06,0.0,5.000110419105088e-06,2022.0,Not Helpful
+year_status_semantic_topic,entertainment_sports_gaming,8,0,3.333406946070059e-06,0.0,3.333406946070059e-06,2022.0,Not Helpful
+year_status_semantic_topic,health_science_medicine,27,0,1.125024844298645e-05,0.0,1.125024844298645e-05,2022.0,Not Helpful
+year_status_semantic_topic,other_misc,252,3,0.00010500231880120686,0.00015,4.499768119879312e-05,2022.0,Not Helpful
+year_status_semantic_topic,platform_media_internet,126,0,5.250115940060343e-05,0.0,5.250115940060343e-05,2022.0,Not Helpful
+year_status_semantic_topic,politics_elections_government,102,1,4.2500938562393254e-05,5e-05,7.499061437606749e-06,2022.0,Not Helpful
+year_status_semantic_topic,social_culture_identity,21,1,8.750193233433905e-06,5e-05,4.1249806766566094e-05,2022.0,Not Helpful
+year_status_semantic_topic,war_geopolitics_international,17,0,7.083489760398876e-06,0.0,7.083489760398876e-06,2022.0,Not Helpful
+year_status_semantic_topic,crime_law_public_safety,1970,22,0.000820851460469752,0.0011,0.00027914853953024807,2023.0,Helpful
+year_status_semantic_topic,economy_business_crypto,2677,21,0.0011154412993286936,0.00105,6.544129932869363e-05,2023.0,Helpful
+year_status_semantic_topic,entertainment_sports_gaming,1096,10,0.0004566767516115981,0.0005,4.332324838840192e-05,2023.0,Helpful
+year_status_semantic_topic,health_science_medicine,1791,14,0.0007462664800514345,0.0007,4.626648005143447e-05,2023.0,Helpful
+year_status_semantic_topic,other_misc,390,3,0.00016250358862091537,0.00015,1.2503588620915382e-05,2023.0,Helpful
+year_status_semantic_topic,platform_media_internet,19265,155,0.008027260602004961,0.00775,0.00027726060200496117,2023.0,Helpful
+year_status_semantic_topic,politics_elections_government,3057,26,0.0012737781292670213,0.0013,2.6221870732978658e-05,2023.0,Helpful
+year_status_semantic_topic,social_culture_identity,1469,17,0.0006120968504721146,0.00085,0.00023790314952788533,2023.0,Helpful
+year_status_semantic_topic,war_geopolitics_international,3308,24,0.0013783637721999694,0.0012,0.0001783637721999695,2023.0,Helpful
+year_status_semantic_topic,crime_law_public_safety,14850,128,0.006187636643642547,0.0064,0.00021236335635745323,2023.0,Need More Ratings
+year_status_semantic_topic,economy_business_crypto,13882,95,0.00578429440316807,0.00475,0.00103429440316807,2023.0,Need More Ratings
+year_status_semantic_topic,entertainment_sports_gaming,5458,51,0.002274216888956298,0.00255,0.0002757831110437024,2023.0,Need More Ratings
+year_status_semantic_topic,health_science_medicine,18088,164,0.007536833105064403,0.0082,0.0006631668949355976,2023.0,Need More Ratings
+year_status_semantic_topic,other_misc,45485,390,0.01895250186774958,0.0195,0.0005474981322504194,2023.0,Need More Ratings
+year_status_semantic_topic,platform_media_internet,144042,1224,0.06001882541572793,0.0612,0.0011811745842720683,2023.0,Need More Ratings
+year_status_semantic_topic,politics_elections_government,32374,258,0.013489464559009012,0.0129,0.0005894645590090123,2023.0,Need More Ratings
+year_status_semantic_topic,social_culture_identity,13818,117,0.005757627147599509,0.00585,9.237285240049076e-05,2023.0,Need More Ratings
+year_status_semantic_topic,war_geopolitics_international,33845,255,0.014102394761217643,0.01275,0.0013523947612176443,2023.0,Need More Ratings
+year_status_semantic_topic,crime_law_public_safety,359,4,0.0001495866367048939,0.0002,5.041336329510612e-05,2023.0,Not Helpful
+year_status_semantic_topic,economy_business_crypto,235,1,9.791882904080799e-05,5e-05,4.7918829040807986e-05,2023.0,Not Helpful
+year_status_semantic_topic,entertainment_sports_gaming,230,1,9.583544969951419e-05,5e-05,4.583544969951419e-05,2023.0,Not Helpful
+year_status_semantic_topic,health_science_medicine,276,3,0.00011500253963941704,0.00015,3.499746036058295e-05,2023.0,Not Helpful
+year_status_semantic_topic,other_misc,4266,33,0.001777539253991859,0.00165,0.0001275392539918591,2023.0,Not Helpful
+year_status_semantic_topic,platform_media_internet,3966,36,0.0016525364935142317,0.0018,0.00014746350648576828,2023.0,Not Helpful
+year_status_semantic_topic,politics_elections_government,835,8,0.0003479243499960624,0.0004,5.2075650003937616e-05,2023.0,Not Helpful
+year_status_semantic_topic,social_culture_identity,573,5,0.000238755272512268,0.00025,1.1244727487732018e-05,2023.0,Not Helpful
+year_status_semantic_topic,war_geopolitics_international,1304,9,0.0005433453322094197,0.00045,9.334533220941969e-05,2023.0,Not Helpful
+year_status_semantic_topic,crime_law_public_safety,3845,32,0.0016021187134549221,0.0016,2.118713454922049e-06,2024.0,Helpful
+year_status_semantic_topic,economy_business_crypto,11701,92,0.00487552433449572,0.0046,0.00027552433449572027,2024.0,Helpful
+year_status_semantic_topic,entertainment_sports_gaming,2887,21,0.0012029432316630327,0.00105,0.00015294323166303273,2024.0,Helpful
+year_status_semantic_topic,health_science_medicine,3538,34,0.0014741992218994836,0.0017,0.00022580077810051627,2024.0,Helpful
+year_status_semantic_topic,other_misc,191,2,7.958509083742266e-05,0.0001,2.0414909162577347e-05,2024.0,Helpful
+year_status_semantic_topic,platform_media_internet,54027,447,0.022511747134415883,0.02235,0.00016174713441588495,2024.0,Helpful
+year_status_semantic_topic,politics_elections_government,7410,59,0.0030875681837973924,0.00295,0.00013756818379739248,2024.0,Helpful
+year_status_semantic_topic,social_culture_identity,3055,21,0.0012729447775305038,0.00105,0.00022294477753050383,2024.0,Helpful
+year_status_semantic_topic,war_geopolitics_international,4522,51,0.0018842082762661008,0.00255,0.0006657917237338994,2024.0,Helpful
+year_status_semantic_topic,crime_law_public_safety,36688,307,0.015287004254677291,0.01535,6.299574532270952e-05,2024.0,Need More Ratings
+year_status_semantic_topic,economy_business_crypto,56810,451,0.02367135607578001,0.02255,0.0011213560757800077,2024.0,Need More Ratings
+year_status_semantic_topic,entertainment_sports_gaming,18664,174,0.007776838405181448,0.0087,0.0009231615948185517,2024.0,Need More Ratings
+year_status_semantic_topic,health_science_medicine,32843,272,0.013684885541222368,0.0136,8.488554122236883e-05,2024.0,Need More Ratings
+year_status_semantic_topic,other_misc,93745,797,0.03906127926991721,0.03985,0.0007887207300827856,2024.0,Need More Ratings
+year_status_semantic_topic,platform_media_internet,431081,3641,0.1796210499648534,0.18205,0.002428950035146593,2024.0,Need More Ratings
+year_status_semantic_topic,politics_elections_government,113254,891,0.04719020878377731,0.04455,0.002640208783777312,2024.0,Need More Ratings
+year_status_semantic_topic,social_culture_identity,34254,266,0.014272815191335475,0.0133,0.0009728151913354754,2024.0,Need More Ratings
+year_status_semantic_topic,war_geopolitics_international,62041,529,0.025850987542641566,0.02645,0.0005990124573584353,2024.0,Need More Ratings
+year_status_semantic_topic,crime_law_public_safety,1135,10,0.00047292711047368965,0.0005,2.707288952631036e-05,2024.0,Not Helpful
+year_status_semantic_topic,economy_business_crypto,703,6,0.0002929231353859064,0.0003,7.0768646140935486e-06,2024.0,Not Helpful
+year_status_semantic_topic,entertainment_sports_gaming,931,9,0.00038792523334890314,0.00045,6.207476665109684e-05,2024.0,Not Helpful
+year_status_semantic_topic,health_science_medicine,562,3,0.00023417183796142164,0.00015,8.417183796142165e-05,2024.0,Not Helpful
+year_status_semantic_topic,other_misc,7157,56,0.0029821491891279268,0.0028,0.0001821491891279268,2024.0,Not Helpful
+year_status_semantic_topic,platform_media_internet,15569,131,0.006487226592920593,0.00655,6.277340707940698e-05,2024.0,Not Helpful
+year_status_semantic_topic,politics_elections_government,3327,30,0.0013862806136968858,0.0015,0.00011371938630311425,2024.0,Not Helpful
+year_status_semantic_topic,social_culture_identity,1539,12,0.0006412641612502276,0.0006,4.126416125022764e-05,2024.0,Not Helpful
+year_status_semantic_topic,war_geopolitics_international,2465,22,0.001027106015257837,0.0011,7.289398474216312e-05,2024.0,Not Helpful
+year_status_semantic_topic,crime_law_public_safety,3060,21,0.0012750281568717976,0.00105,0.00022502815687179762,2025.0,Helpful
+year_status_semantic_topic,economy_business_crypto,3457,26,0.0014404484765705244,0.0013,0.0001404484765705244,2025.0,Helpful
+year_status_semantic_topic,entertainment_sports_gaming,2121,18,0.0008837695165768244,0.0009,1.623048342317562e-05,2025.0,Helpful
+year_status_semantic_topic,health_science_medicine,1694,18,0.000705848920830335,0.0009,0.000194151079169665,2025.0,Helpful
+year_status_semantic_topic,other_misc,235,5,9.791882904080799e-05,0.00025,0.00015208117095919202,2025.0,Helpful
+year_status_semantic_topic,platform_media_internet,46734,390,0.01947293002720477,0.0195,2.706997279523088e-05,2025.0,Helpful
+year_status_semantic_topic,politics_elections_government,5218,40,0.0021742146805741962,0.002,0.00017421468057419618,2025.0,Helpful
+year_status_semantic_topic,social_culture_identity,2712,23,0.00113002495471775,0.00115,1.997504528224994e-05,2025.0,Helpful
+year_status_semantic_topic,war_geopolitics_international,2427,21,0.0010112723322640042,0.00105,3.872766773599574e-05,2025.0,Helpful
+year_status_semantic_topic,crime_law_public_safety,30522,294,0.012717780850993793,0.0147,0.001982219149006207,2025.0,Need More Ratings
+year_status_semantic_topic,economy_business_crypto,33522,287,0.013967808455770066,0.01435,0.00038219154422993416,2025.0,Need More Ratings
+year_status_semantic_topic,entertainment_sports_gaming,12061,100,0.0050255276470688726,0.005,2.5527647068872457e-05,2025.0,Need More Ratings
+year_status_semantic_topic,health_science_medicine,15915,133,0.0066313964433381235,0.00665,1.8603556661876165e-05,2025.0,Need More Ratings
+year_status_semantic_topic,other_misc,52999,440,0.022083404341845882,0.022,8.340434184588366e-05,2025.0,Need More Ratings
+year_status_semantic_topic,platform_media_internet,356869,2898,0.14869870042963448,0.1449,0.003798700429634483,2025.0,Need More Ratings
+year_status_semantic_topic,politics_elections_government,74408,650,0.031004018005397618,0.0325,0.0014959819946023835,2025.0,Need More Ratings
+year_status_semantic_topic,social_culture_identity,26240,222,0.010933574783109794,0.0111,0.00016642521689020674,2025.0,Need More Ratings
+year_status_semantic_topic,war_geopolitics_international,35163,290,0.014651573555582685,0.0145,0.00015157355558268436,2025.0,Need More Ratings
+year_status_semantic_topic,crime_law_public_safety,1084,8,0.000451676641192493,0.0004,5.167664119249299e-05,2025.0,Not Helpful
+year_status_semantic_topic,economy_business_crypto,703,3,0.0002929231353859064,0.00015,0.00014292313538590644,2025.0,Not Helpful
+year_status_semantic_topic,entertainment_sports_gaming,766,4,0.00031917371508620814,0.0002,0.00011917371508620813,2025.0,Not Helpful
+year_status_semantic_topic,health_science_medicine,386,1,0.00016083688514788034,5e-05,0.00011083688514788035,2025.0,Not Helpful
+year_status_semantic_topic,other_misc,5916,53,0.0024650544366188088,0.00265,0.00018494556338119125,2025.0,Not Helpful
+year_status_semantic_topic,platform_media_internet,15223,134,0.006343056742503064,0.0067,0.0003569432574969363,2025.0,Not Helpful
+year_status_semantic_topic,politics_elections_government,2587,21,0.0010779404711854053,0.00105,2.7940471185405316e-05,2025.0,Not Helpful
+year_status_semantic_topic,social_culture_identity,1353,12,0.0005637624497540988,0.0006,3.6237550245901196e-05,2025.0,Not Helpful
+year_status_semantic_topic,war_geopolitics_international,1810,14,0.0007541833215483508,0.0007,5.4183321548350845e-05,2025.0,Not Helpful
+year_status_semantic_topic,crime_law_public_safety,1241,11,0.0005170947525091179,0.00055,3.290524749088213e-05,2026.0,Helpful
+year_status_semantic_topic,economy_business_crypto,749,8,0.0003120902253258093,0.0004,8.790977467419074e-05,2026.0,Helpful
+year_status_semantic_topic,entertainment_sports_gaming,1080,9,0.000450009937719458,0.00045,9.937719457997311e-09,2026.0,Helpful
+year_status_semantic_topic,health_science_medicine,629,3,0.0002620891211347584,0.00015,0.0001120891211347584,2026.0,Helpful
+year_status_semantic_topic,other_misc,97,1,4.0417559221099464e-05,5e-05,9.582440778900539e-06,2026.0,Helpful
+year_status_semantic_topic,platform_media_internet,16509,147,0.006878901909083825,0.00735,0.0004710980909161744,2026.0,Helpful
+year_status_semantic_topic,politics_elections_government,2353,17,0.0009804383180128562,0.00085,0.00013043831801285626,2026.0,Helpful
+year_status_semantic_topic,social_culture_identity,1139,8,0.0004745938139467247,0.0004,7.459381394672466e-05,2026.0,Helpful
+year_status_semantic_topic,war_geopolitics_international,1925,11,0.000802101046398108,0.00055,0.0002521010463981079,2026.0,Helpful
+year_status_semantic_topic,crime_law_public_safety,11853,106,0.004938859066471051,0.0053,0.00036114093352894883,2026.0,Need More Ratings
+year_status_semantic_topic,economy_business_crypto,6477,55,0.0026988095987119714,0.00275,5.119040128802842e-05,2026.0,Need More Ratings
+year_status_semantic_topic,entertainment_sports_gaming,6277,51,0.00261547442506022,0.00255,6.547442506021992e-05,2026.0,Need More Ratings
+year_status_semantic_topic,health_science_medicine,5183,46,0.0021596310251851395,0.0023,0.00014036897481486043,2026.0,Need More Ratings
+year_status_semantic_topic,other_misc,12377,94,0.0051571972214386405,0.0047,0.0004571972214386403,2026.0,Need More Ratings
+year_status_semantic_topic,platform_media_internet,121466,1013,0.05061195101391822,0.05065,3.804898608177759e-05,2026.0,Need More Ratings
+year_status_semantic_topic,politics_elections_government,26466,222,0.011027743529336272,0.0111,7.225647066372819e-05,2026.0,Need More Ratings
+year_status_semantic_topic,social_culture_identity,9581,88,0.0039921714937871545,0.0044,0.0004078285062128458,2026.0,Need More Ratings
+year_status_semantic_topic,war_geopolitics_international,19226,149,0.00801101024314287,0.00745,0.0005610102431428694,2026.0,Need More Ratings
+year_status_semantic_topic,crime_law_public_safety,548,6,0.00022833837580579905,0.0003,7.166162419420093e-05,2026.0,Not Helpful
+year_status_semantic_topic,economy_business_crypto,218,2,9.083533928040911e-05,0.0001,9.164660719590892e-06,2026.0,Not Helpful
+year_status_semantic_topic,entertainment_sports_gaming,326,5,0.00013583633305235492,0.00025,0.00011416366694764509,2026.0,Not Helpful
+year_status_semantic_topic,health_science_medicine,159,1,6.625146305314242e-05,5e-05,1.6251463053142417e-05,2026.0,Not Helpful
+year_status_semantic_topic,other_misc,1585,14,0.0006604312511901305,0.0007,3.9568748809869496e-05,2026.0,Not Helpful
+year_status_semantic_topic,platform_media_internet,5447,42,0.0022696334544054513,0.0021,0.0001696334544054514,2026.0,Not Helpful
+year_status_semantic_topic,politics_elections_government,1089,12,0.0004537600205337868,0.0006,0.00014623997946621315,2026.0,Not Helpful
+year_status_semantic_topic,social_culture_identity,461,5,0.00019208757526728714,0.00025,5.7912424732712865e-05,2026.0,Not Helpful
+year_status_semantic_topic,war_geopolitics_international,1090,4,0.00045417669640204555,0.0002,0.00025417669640204557,2026.0,Not Helpful

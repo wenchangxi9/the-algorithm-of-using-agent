@@ -211,7 +211,7 @@ def best_threshold(y_true: np.ndarray, score: np.ndarray, thresholds: np.ndarray
     return best[1], best[2]
 
 
-def make_model(c: float, class_weight: str | None) -> Pipeline:
+def make_model(c: float, class_weight: str | None, penalty: str = "l2") -> Pipeline:
     return Pipeline(
         [
             ("imputer", SimpleImputer(strategy="median")),
@@ -220,8 +220,9 @@ def make_model(c: float, class_weight: str | None) -> Pipeline:
                 "clf",
                 LogisticRegression(
                     C=c,
+                    penalty=penalty,
                     class_weight=class_weight,
-                    max_iter=5000,
+                    max_iter=10000,
                     random_state=42,
                     solver="liblinear",
                 ),
@@ -235,6 +236,7 @@ class ModelSpec:
     name: str
     feature_cols: list[str]
     c: float
+    penalty: str
     class_weight: str | None
     threshold: float
     inner_accuracy: float
@@ -250,40 +252,43 @@ def inner_select_logreg(
     seed: int,
     inner_folds: int,
 ) -> ModelSpec:
-    c_grid = [0.03, 0.1, 0.3, 1.0, 3.0, 10.0]
+    c_grid = [0.003, 0.01, 0.03, 0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0]
+    penalties = ["l1", "l2"]
     class_weights: list[str | None] = [None, "balanced"]
-    prob_thresholds = np.arange(0.20, 0.81, 0.01)
+    prob_thresholds = np.arange(0.10, 0.901, 0.005)
     inner_cv = StratifiedKFold(n_splits=inner_folds, shuffle=True, random_state=seed)
 
     best: tuple[tuple[float, float, float], ModelSpec] | None = None
     X_train = X.iloc[train_idx][feature_cols]
     y_train = y[train_idx]
 
-    for c in c_grid:
-        for class_weight in class_weights:
-            oof_prob = np.zeros(len(train_idx), dtype=float)
-            for inner_train_pos, inner_val_pos in inner_cv.split(X_train, y_train):
-                model = make_model(c, class_weight)
-                model.fit(X_train.iloc[inner_train_pos], y_train[inner_train_pos])
-                oof_prob[inner_val_pos] = model.predict_proba(X_train.iloc[inner_val_pos])[:, 1]
+    for penalty in penalties:
+        for c in c_grid:
+            for class_weight in class_weights:
+                oof_prob = np.zeros(len(train_idx), dtype=float)
+                for inner_train_pos, inner_val_pos in inner_cv.split(X_train, y_train):
+                    model = make_model(c, class_weight, penalty)
+                    model.fit(X_train.iloc[inner_train_pos], y_train[inner_train_pos])
+                    oof_prob[inner_val_pos] = model.predict_proba(X_train.iloc[inner_val_pos])[:, 1]
 
-            threshold, metrics = best_threshold(y_train, oof_prob, prob_thresholds)
-            key = (
-                float(metrics["accuracy"]),
-                float(metrics["balanced_accuracy"]),
-                -abs(threshold - 0.5),
-            )
-            spec = ModelSpec(
-                name=name,
-                feature_cols=feature_cols,
-                c=c,
-                class_weight=class_weight,
-                threshold=threshold,
-                inner_accuracy=float(metrics["accuracy"]),
-                inner_balanced_accuracy=float(metrics["balanced_accuracy"]),
-            )
-            if best is None or key > best[0]:
-                best = (key, spec)
+                threshold, metrics = best_threshold(y_train, oof_prob, prob_thresholds)
+                key = (
+                    float(metrics["accuracy"]),
+                    float(metrics["balanced_accuracy"]),
+                    -abs(threshold - 0.5),
+                )
+                spec = ModelSpec(
+                    name=name,
+                    feature_cols=feature_cols,
+                    c=c,
+                    penalty=penalty,
+                    class_weight=class_weight,
+                    threshold=threshold,
+                    inner_accuracy=float(metrics["accuracy"]),
+                    inner_balanced_accuracy=float(metrics["balanced_accuracy"]),
+                )
+                if best is None or key > best[0]:
+                    best = (key, spec)
     assert best is not None
     return best[1]
 
@@ -295,7 +300,7 @@ def fit_predict_logreg(
     test_idx: np.ndarray,
     spec: ModelSpec,
 ) -> tuple[np.ndarray, np.ndarray]:
-    model = make_model(spec.c, spec.class_weight)
+    model = make_model(spec.c, spec.class_weight, spec.penalty)
     model.fit(X.iloc[train_idx][spec.feature_cols], y[train_idx])
     prob = model.predict_proba(X.iloc[test_idx][spec.feature_cols])[:, 1]
     pred = (prob >= spec.threshold).astype(int)
@@ -315,7 +320,7 @@ def train_oof_scores_for_spec(
     scores = np.zeros(len(train_idx), dtype=float)
     inner_cv = StratifiedKFold(n_splits=inner_folds, shuffle=True, random_state=seed)
     for inner_train_pos, inner_val_pos in inner_cv.split(X_train, y_train):
-        model = make_model(spec.c, spec.class_weight)
+        model = make_model(spec.c, spec.class_weight, spec.penalty)
         model.fit(X_train.iloc[inner_train_pos], y_train[inner_train_pos])
         scores[inner_val_pos] = model.predict_proba(X_train.iloc[inner_val_pos])[:, 1]
     return scores
@@ -380,7 +385,7 @@ def run_cross_validation(
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     y = feature_df["true_label"].to_numpy(dtype=int)
     cv = StratifiedKFold(n_splits=folds, shuffle=True, random_state=seed)
-    raw_thresholds = np.arange(0.0, 0.81, 0.01)
+    raw_thresholds = np.arange(0.0, 1.001, 0.005)
     method_names = [
         "majority_threshold_050",
         "raw_share_threshold_cv",
@@ -506,6 +511,7 @@ def run_cross_validation(
                 {
                     "fold": fold,
                     "method": name,
+                    "penalty": spec.penalty,
                     "threshold": spec.threshold,
                     "c": spec.c,
                     "class_weight": spec.class_weight or "none",
@@ -531,6 +537,7 @@ def run_cross_validation(
                 {
                     "fold": fold,
                     "method": name,
+                    "penalty": spec.penalty,
                     "c": spec.c,
                     "class_weight": spec.class_weight or "none",
                     "threshold": spec.threshold,

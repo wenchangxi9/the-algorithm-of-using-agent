@@ -1,0 +1,46 @@
+{
+  "time_utc": "2026-05-12T13:43:51.491588+00:00",
+  "sample_csv": "/data6/wenchangxi/community_note/analysis/llm_16agent_tristate_2000_20260512/pilot_notes.csv",
+  "cluster_summary_csv": "/data6/wenchangxi/community_note/analysis/official_mfcore_rater_clustering_20260510_201855/k_search_2_32_step1/cluster_summary_k16.csv",
+  "model": "gpt-5.4-nano",
+  "base_url": "https://api.gpt.ge/v1",
+  "n_notes": 2000,
+  "n_agents": 16,
+  "tasks": 32000,
+  "selection_mode": "sample_order",
+  "output_schema": [
+    "helpfulnessLevel",
+    "agree",
+    "disagree",
+    "helpfulClear",
+    "helpfulGoodSources",
+    "helpfulAddressesClaim",
+    "helpfulImportantContext",
+    "helpfulUnbiasedLanguage",
+    "notHelpfulIncorrect",
+    "notHelpfulSourcesMissingOrUnreliable",
+    "notHelpfulMissingKeyPoints",
+    "notHelpfulHardToUnderstand",
+    "notHelpfulArgumentativeOrBiased",
+    "notHelpfulIrrelevantSources",
+    "notHelpfulOpinionSpeculation",
+    "notHelpfulNoteNotNeeded",
+    "confidence",
+    "changes_reader_understanding",
+    "rationale"
+  ],
+  "label_space": {
+    "NOT_HELPFUL": 0.0,
+    "SOMEWHAT_HELPFUL": 0.5,
+    "HELPFUL": 1.0
+  },
+  "completed_votes": 32000,
+  "valid_votes": 31996,
+  "rating_distribution": {
+    "SOMEWHAT_HELPFUL": 19461,
+    "NOT_HELPFUL": 9775,
+    "HELPFUL": 2760,
+    "UNKNOWN": 4
+  },
+  "api_errors": 5
+}

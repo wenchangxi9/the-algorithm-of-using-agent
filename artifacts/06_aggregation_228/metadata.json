@@ -1,0 +1,7 @@
+{
+  "run_dir": "/data6/wenchangxi/community_note/analysis/llm_16agent_binaryrating_balanced_228_promptv4_20260513",
+  "out_dir": "/data6/wenchangxi/community_note/analysis/llm_16agent_binaryrating_balanced_228_promptv4_20260513/tristate_aggregator_parallel_fast_20260513",
+  "n_candidates": 880,
+  "jobs": 16,
+  "note": "Parallel fast exploration. Every candidate is evaluated by outer-fold predictions; no API calls."
+}

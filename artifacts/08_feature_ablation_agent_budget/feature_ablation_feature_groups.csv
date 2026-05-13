@@ -1,0 +1,9 @@
+﻿agent_count,group,n_features,features
+24,vote_share,1,"[""llm_helpful_share""]"
+24,vote_uncertainty,3,"[""llm_total_votes"", ""helpful_vote_margin_from_half"", ""helpful_vote_entropy""]"
+24,confidence,2,"[""llm_mean_confidence"", ""confidence_weighted_helpful_share""]"
+24,quality,5,"[""llm_mean_addresses_core_claim"", ""llm_mean_changes_reader_understanding"", ""llm_mean_note_needed"", ""llm_mean_evidence_strength"", ""quality_signal_mean""]"
+24,failure,3,"[""llm_misses_key_points_rate"", ""llm_too_minor_rate"", ""failure_signal_mean""]"
+24,cluster_disagreement,4,"[""equal_cluster_helpful_share"", ""cluster_helpful_share_std"", ""cluster_helpful_share_min"", ""cluster_helpful_share_max""]"
+24,cluster_quality,5,"[""equal_cluster_note_needed"", ""equal_cluster_changes_reader_understanding"", ""equal_cluster_evidence_strength"", ""equal_cluster_misses_key_points_rate"", ""equal_cluster_too_minor_rate""]"
+24,agent_votes,24,"[""agent_vote__cluster_00_agent_01"", ""agent_vote__cluster_01_agent_01"", ""agent_vote__cluster_02_agent_01"", ""agent_vote__cluster_03_agent_01"", ""agent_vote__cluster_04_agent_01"", ""agent_vote__cluster_05_agent_01"", ""agent_vote__cluster_06_agent_01"", ""agent_vote__cluster_07_agent_01"", ""agent_vote__cluster_08_agent_01"", ""agent_vote__cluster_09_agent_01"", ""agent_vote__cluster_10_agent_01"", ""agent_vote__cluster_11_agent_01"", ""agent_vote__cluster_12_agent_01"", ""agent_vote__cluster_13_agent_01"", ""agent_vote__cluster_14_agent_01"", ""agent_vote__cluster_15_agent_01"", ""agent_vote__cluster_16_agent_01"", ""agent_vote__cluster_17_agent_01"", ""agent_vote__cluster_18_agent_01"", ""agent_vote__cluster_19_agent_01"", ""agent_vote__cluster_20_agent_01"", ""agent_vote__cluster_21_agent_01"", ""agent_vote__cluster_22_agent_01"", ""agent_vote__cluster_23_agent_01""]"

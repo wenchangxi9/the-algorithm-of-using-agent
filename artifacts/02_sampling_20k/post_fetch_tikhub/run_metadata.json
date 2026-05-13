@@ -1,0 +1,13 @@
+{
+  "started_at_utc": "2026-05-11T12:51:32.694962+00:00",
+  "queue": "analysis/representative_20k_sample_20260511/sample_20k_post_fetch_queue.csv",
+  "outdir": "analysis/representative_20k_sample_20260511/post_fetch_tikhub",
+  "endpoint": "https://api.tikhub.io/api/v1/twitter/web/fetch_tweet_detail",
+  "request_param": "tweet_id",
+  "input_unique_tweets": 19887,
+  "already_done_success": 0,
+  "remaining_this_run": 19887,
+  "workers": 12,
+  "rate_limit": 8.0,
+  "token_file": "secrets/tikhub_token.txt"
+}

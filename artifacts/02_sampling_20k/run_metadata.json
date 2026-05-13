@@ -1,0 +1,54 @@
+{
+  "sample_size": 20000,
+  "seed": 42,
+  "workers": 32,
+  "data_root": "data/extracted_communitynotes_2026-04-07",
+  "sampling_frame_notes": 2399946,
+  "strata": [
+    "year",
+    "status_label",
+    "primary_topic"
+  ],
+  "status_map": {
+    "CURRENTLY_RATED_HELPFUL": "Helpful",
+    "CURRENTLY_RATED_NOT_HELPFUL": "Not Helpful",
+    "NEEDS_MORE_RATINGS": "Need More Ratings"
+  },
+  "topic_definition": {
+    "primary_topic_order": [
+      [
+        "misleadingManipulatedMedia",
+        "Manipulated media"
+      ],
+      [
+        "misleadingFactualError",
+        "Factual error"
+      ],
+      [
+        "misleadingOutdatedInformation",
+        "Outdated information"
+      ],
+      [
+        "misleadingMissingImportantContext",
+        "Missing important context"
+      ],
+      [
+        "misleadingUnverifiedClaimAsFact",
+        "Unverified claim as fact"
+      ],
+      [
+        "misleadingSatire",
+        "Satire"
+      ]
+    ],
+    "not_misleading_rule": "classification == NOT_MISLEADING or any notMisleading* tag",
+    "fallback": "Other"
+  },
+  "outputs": [
+    "sample_20k_notes.csv",
+    "sample_20k_post_fetch_queue.csv",
+    "stratum_allocation_year_status_topic.csv",
+    "sample_distribution_check.csv",
+    "topic_multilabel_flag_check.csv"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "time_utc": "2026-05-11T12:30:24.538571+00:00",
+  "population_notes": 2399947,
+  "sample_notes": 20000,
+  "semantic_topic_rule": "keyword rules over classification + note summary; post text not yet included",
+  "max_abs_semantic_topic_prop_diff": 0.0028244068931522273,
+  "max_abs_year_semantic_topic_prop_diff": 0.00341468719934232,
+  "max_abs_status_semantic_topic_prop_diff": 0.0026570312802741067,
+  "max_abs_joint_prop_diff": 0.003798700429634483,
+  "outputs": [
+    "sample_20k_with_semantic_topic.csv",
+    "semantic_topic_distribution.csv",
+    "semantic_topic_distribution_check.csv",
+    "semantic_topic_check_summary.json"
+  ]
+}

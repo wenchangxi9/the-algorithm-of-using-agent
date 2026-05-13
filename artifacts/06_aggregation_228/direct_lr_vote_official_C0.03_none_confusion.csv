@@ -1,0 +1,4 @@
+﻿,pred_HELPFUL,pred_NMR,pred_NOT_HELPFUL
+true_HELPFUL,49,15,12
+true_NMR,20,26,30
+true_NOT_HELPFUL,7,19,50

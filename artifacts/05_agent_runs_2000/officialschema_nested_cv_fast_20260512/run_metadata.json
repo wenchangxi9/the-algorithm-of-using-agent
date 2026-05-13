@@ -1,0 +1,38 @@
+{
+  "run_dir": "/data6/wenchangxi/community_note/analysis/llm_16agent_rawrating_2000_20260512_officialschema",
+  "out_dir": "/data6/wenchangxi/community_note/analysis/llm_16agent_rawrating_2000_20260512_officialschema/officialschema_nested_cv_fast_20260512",
+  "n_notes": 2000,
+  "folds": 5,
+  "inner_folds": 4,
+  "true_distribution": {
+    "NEEDS_MORE_RATINGS": 1775,
+    "HELPFUL": 149,
+    "NOT_HELPFUL": 76
+  },
+  "feature_sets": {
+    "summary": 109,
+    "full_agent": 237,
+    "full_agent_plus_metadata": 262
+  },
+  "best_method": "always_nmr",
+  "best": {
+    "method": "always_nmr",
+    "family": "baseline",
+    "n_features": 0,
+    "accuracy": 0.8875,
+    "balanced_accuracy": 0.3333333333333333,
+    "n": 2000,
+    "recall_not_helpful": 0.0,
+    "n_not_helpful": 76,
+    "recall_needs_more_ratings": 1.0,
+    "n_needs_more_ratings": 1775,
+    "recall_helpful": 0.0,
+    "n_helpful": 149,
+    "feature_set": NaN,
+    "accuracy_pct": 88.75,
+    "balanced_accuracy_pct": 33.33333333333333,
+    "recall_not_helpful_pct": 0.0,
+    "recall_needs_more_ratings_pct": 100.0,
+    "recall_helpful_pct": 0.0
+  }
+}

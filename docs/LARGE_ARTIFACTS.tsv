@@ -1,0 +1,6 @@
+status	path	reason
+omitted	/data6/wenchangxi/community_note/analysis/official_mfcore_rater_clustering_20260510_201855/k_search_2_32_step1/rater_features_with_k16_clusters.csv	Full rater feature table is larger than 100MB; a 1000-row sample is included.
+omitted	/data6/wenchangxi/community_note/analysis/representative_20k_sample_20260511/post_fetch_tikhub/posts_tikhub.jsonl	Raw post-fetch API responses are bulky; parsed success/failed CSVs and summaries are included.
+omitted	/data6/wenchangxi/community_note/analysis/llm_16agent_rawrating_2000_20260512_officialschema/agent_votes.jsonl	Raw LLM JSONL duplicate is bulky; parsed agent_votes.csv and summaries are included.
+omitted	/data6/wenchangxi/community_note/data	Official Community Notes raw dump is external source data and too large for GitHub.
+omitted	/data6/wenchangxi/community_note/secrets	Contains credentials/API keys and must never be committed.

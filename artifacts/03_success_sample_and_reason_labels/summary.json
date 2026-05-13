@@ -1,0 +1,28 @@
+{
+  "candidate_notes_total": 27000,
+  "candidate_unique_tweets_total": 26872,
+  "success_unique_tweets_total": 21368,
+  "success_notes_total": 21476,
+  "base_success_notes": 15917,
+  "supp_success_notes": 5559,
+  "failed_or_missing_post_notes": 5524,
+  "batch_counts": [
+    {
+      "source_batch": "base_20k",
+      "success_note_count": 15917
+    },
+    {
+      "source_batch": "supp_7k",
+      "success_note_count": 5559
+    }
+  ],
+  "max_abs_year_prop_diff": 0.01703425666433056,
+  "max_abs_status_prop_diff": 0.01920763222449709,
+  "max_abs_primary_topic_prop_diff": 0.017569135177957274,
+  "max_abs_joint_prop_diff": 0.009613177392598662,
+  "outputs": [
+    "combined_27k_notes_with_post_fetch_status.csv",
+    "combined_success_notes_with_posts.csv",
+    "combined_success_distribution_check.csv"
+  ]
+}

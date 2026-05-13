@@ -1,0 +1,20 @@
+{
+  "description": "K=2..32 interval-1 search using existing official MFCoreScorer rater outputs.",
+  "rater_output": "analysis/official_mfcore_rater_clustering_20260510_201855/official_mfcore_rater_output.tsv",
+  "seed": 42,
+  "k_min": 2,
+  "k_max": 32,
+  "feature_columns": [
+    "internalRaterIntercept",
+    "internalRaterFactor1",
+    "internalFirstRoundRaterIntercept",
+    "internalFirstRoundRaterFactor1",
+    "crhCrnhRatioDifference",
+    "meanNoteScore",
+    "raterAgreeRatio",
+    "aboveHelpfulnessThreshold"
+  ],
+  "selected_k_by_silhouette": 16,
+  "selected_k_by_davies_bouldin": 13,
+  "elapsed_minutes": 26.13811275164286
+}

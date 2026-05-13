@@ -1,0 +1,25 @@
+{
+  "n_notes": 2000,
+  "n_agents": 16,
+  "n_calls": 32000,
+  "system_chars_mean": 4601.1875,
+  "user_chars_mean": 618.0505,
+  "completion_chars_mean": 681.815,
+  "approx_input_tokens_per_call": 1304.8095,
+  "approx_output_tokens_per_call": 170.45375,
+  "approx_input_tokens_total": 41753904.0,
+  "approx_output_tokens_total": 5454520.0,
+  "costs": {
+    "gpt-5.4": {
+      "input_cost_usd": 104.38476,
+      "output_cost_usd": 81.81779999999999,
+      "total_cost_usd": 186.20256
+    },
+    "gpt-5.4-nano": {
+      "input_cost_usd": 8.3507808,
+      "output_cost_usd": 6.818149999999999,
+      "total_cost_usd": 15.1689308
+    }
+  },
+  "note": "Approximate token estimate uses chars/4. Use provider token usage logs for exact billing."
+}

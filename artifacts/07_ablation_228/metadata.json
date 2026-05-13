@@ -1,0 +1,61 @@
+{
+  "run_dir": "/data6/wenchangxi/community_note/analysis/llm_16agent_binaryrating_balanced_228_promptv4_20260513",
+  "out_dir": "/data6/wenchangxi/community_note/analysis/llm_16agent_binaryrating_balanced_228_promptv4_20260513/selected_feature_group_ablation_binary_promptv4_20260513",
+  "n_notes": 228,
+  "n_votes": 3648,
+  "class_counts": {
+    "NEEDS_MORE_RATINGS": 76,
+    "NOT_HELPFUL": 76,
+    "HELPFUL": 76
+  },
+  "best_method": "vote_plus_confidence",
+  "best": {
+    "method": "vote_plus_confidence",
+    "n_features": 15,
+    "accuracy": 0.5701754385964912,
+    "balanced_accuracy": 0.5701754385964912,
+    "h_to_nh": 11,
+    "nh_to_h": 5,
+    "cross_error": 16,
+    "recall_not_helpful": 0.631578947368421,
+    "n_not_helpful": 76,
+    "recall_needs_more_ratings": 0.4605263157894737,
+    "n_needs_more_ratings": 76,
+    "recall_helpful": 0.618421052631579,
+    "n_helpful": 76,
+    "fold_accuracy_mean": 0.5699516908212561,
+    "fold_accuracy_se": 0.016334218477531214,
+    "fold_balanced_accuracy_mean": 0.5697222222222222,
+    "fold_balanced_accuracy_se": 0.016013834682379102,
+    "accuracy_pct": 57.01754385964912,
+    "balanced_accuracy_pct": 57.01754385964912,
+    "recall_not_helpful_pct": 63.1578947368421,
+    "recall_needs_more_ratings_pct": 46.05263157894737,
+    "recall_helpful_pct": 61.8421052631579,
+    "fold_accuracy_mean_pct": 56.99516908212561,
+    "fold_accuracy_se_pct": 1.6334218477531213,
+    "fold_balanced_accuracy_mean_pct": 56.97222222222222,
+    "fold_balanced_accuracy_se_pct": 1.6013834682379102
+  },
+  "official_helpful_reason_fields": [
+    "helpfulClear",
+    "helpfulGoodSources",
+    "helpfulAddressesClaim",
+    "helpfulImportantContext",
+    "helpfulUnbiasedLanguage"
+  ],
+  "official_not_helpful_reason_fields": [
+    "notHelpfulIncorrect",
+    "notHelpfulSourcesMissingOrUnreliable",
+    "NotHelpfulOpinionSpeculationOrBias",
+    "notHelpfulMissingKeyPoints",
+    "notHelpfulOutdated",
+    "notHelpfulHardToUnderstand",
+    "notHelpfulArgumentativeOrBiased",
+    "notHelpfulOffTopic",
+    "notHelpfulSpamHarassmentOrAbuse",
+    "notHelpfulIrrelevantSources",
+    "notHelpfulOpinionSpeculation",
+    "notHelpfulNoteNotNeeded"
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "time_utc": "2026-05-11T20:32:13.879959+00:00",
+  "sample_csv": "analysis/combined_success_sample_20260511/combined_success_notes_with_posts.csv",
+  "ratings_dir": "data/extracted_communitynotes_2026-04-07/noteRatings",
+  "output_csv": "analysis/combined_success_sample_20260511/reason_labels/combined_success_notes_with_posts_and_reasons.csv",
+  "reasons_only_csv": "analysis/combined_success_sample_20260511/reason_labels/reason_labels_for_combined_success_sample.csv",
+  "reason_summary_csv": "analysis/combined_success_sample_20260511/reason_labels/reason_label_summary.csv",
+  "notes": 21476,
+  "notes_with_any_reason": 20753,
+  "notes_without_reason": 723,
+  "mean_reason_count": 2.6748463401005775,
+  "mean_relevant_reason_rating_count": 82.75246787111193,
+  "helpfulness_label_distribution": {
+    "Need More Ratings": 19075,
+    "Helpful": 1574,
+    "Not Helpful": 827
+  },
+  "coverage_by_status": [
+    {
+      "helpfulness_label_3way": "Helpful",
+      "notes": 1574,
+      "notes_with_any_reason": 1574,
+      "mean_reason_count": 3.0,
+      "mean_relevant_reason_rating_count": 145.1277001270648
+    },
+    {
+      "helpfulness_label_3way": "Need More Ratings",
+      "notes": 19075,
+      "notes_with_any_reason": 18352,
+      "mean_reason_count": 2.637483617300131,
+      "mean_relevant_reason_rating_count": 78.38144167758847
+    },
+    {
+      "helpfulness_label_3way": "Not Helpful",
+      "notes": 827,
+      "notes_with_any_reason": 827,
+      "mean_reason_count": 2.917775090689238,
+      "mean_relevant_reason_rating_count": 64.85489721886336
+    }
+  ],
+  "reason_labels": [
+    "helpfulAddressesClaim",
+    "helpfulClear",
+    "helpfulEmpathetic",
+    "helpfulGoodSources",
+    "helpfulImportantContext",
+    "helpfulInformative",
+    "helpfulUnbiasedLanguage",
+    "helpfulUniqueContext",
+    "notHelpfulArgumentativeOrBiased",
+    "notHelpfulHardToUnderstand",
+    "notHelpfulIncorrect",
+    "notHelpfulIrrelevantSources",
+    "notHelpfulMissingKeyPoints",
+    "notHelpfulNoteNotNeeded",
+    "notHelpfulOffTopic",
+    "notHelpfulOpinionSpeculationOrBias",
+    "notHelpfulSourcesMissingOrUnreliable",
+    "notHelpfulSpamHarassmentOrAbuse"
+  ],
+  "min_votes": 2,
+  "min_share": 0.0,
+  "max_reasons": 3,
+  "total_matched_rating_rows": 1817908,
+  "total_rating_chunks": 424,
+  "aggregation_rule": "Helpful notes use helpful-side reason checkboxes; Not Helpful notes use not-helpful-side reason checkboxes; Need More Ratings notes use both sides because there is no resolved side."
+}
