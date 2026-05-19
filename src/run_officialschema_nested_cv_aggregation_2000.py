@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
-from dataclasses import dataclass
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -18,8 +18,10 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 LABEL_TO_INT = {"NOT_HELPFUL": 0, "NEEDS_MORE_RATINGS": 1, "HELPFUL": 2}
 INT_TO_LABEL = {v: k for k, v in LABEL_TO_INT.items()}
-RESOLVED = {0, 2}
 RAW_LABEL_SCORE = {"NOT_HELPFUL": 0.0, "SOMEWHAT_HELPFUL": 0.5, "HELPFUL": 1.0}
+
+warnings.filterwarnings("ignore", category=RuntimeWarning)
+np.seterr(all="ignore")
 
 
 def parse_args() -> argparse.Namespace:
@@ -33,10 +35,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--inner-folds", type=int, default=4)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--target-coverage", type=float, default=0.1125)
+    parser.add_argument("--acc-drop-max", type=float, default=0.005)
     return parser.parse_args()
 
 
-def make_lr(c: float, class_weight: str | None, multi_class: bool = True) -> Pipeline:
+def make_lr(seed: int) -> Pipeline:
     return Pipeline(
         [
             ("imputer", SimpleImputer(strategy="median")),
@@ -44,12 +47,11 @@ def make_lr(c: float, class_weight: str | None, multi_class: bool = True) -> Pip
             (
                 "clf",
                 LogisticRegression(
-                    C=c,
-                    class_weight=class_weight,
+                    C=0.3,
+                    class_weight="balanced",
                     max_iter=5000,
-                    random_state=42,
                     solver="lbfgs",
-                    multi_class="auto" if multi_class else "auto",
+                    random_state=seed,
                 ),
             ),
         ]
@@ -253,9 +255,9 @@ def build_features(run_dir: Path) -> tuple[pd.DataFrame, dict[str, list[str]]]:
         arr = enc.fit_transform(meta[categorical].fillna("UNKNOWN"))
         enc_df = pd.DataFrame(arr, columns=[f"meta_{x}" for x in enc.get_feature_names_out(categorical)])
         meta = pd.concat([meta.drop(columns=categorical).reset_index(drop=True), enc_df], axis=1)
-    for c in meta.columns:
-        if c != "noteId":
-            meta[c] = pd.to_numeric(meta[c], errors="coerce")
+    for col in meta.columns:
+        if col != "noteId":
+            meta[col] = pd.to_numeric(meta[col], errors="coerce")
     full = base.merge(meta, on="noteId", how="left")
 
     non_features = {"noteId", "tweetId", "currentStatus", "true_label_3way", "true_label_text"}
@@ -282,226 +284,200 @@ def build_features(run_dir: Path) -> tuple[pd.DataFrame, dict[str, list[str]]]:
     }
 
 
-def metrics(y_true: np.ndarray, pred: np.ndarray) -> dict[str, float | int | None]:
-    out: dict[str, float | int | None] = {}
-    out["accuracy"] = float((y_true == pred).mean())
-    out["balanced_accuracy"] = float(balanced_accuracy_score(y_true, pred))
+def metric(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float | int]:
+    out = {
+        "accuracy": float((y_true == y_pred).mean()),
+        "balanced_accuracy": float(balanced_accuracy_score(y_true, y_pred)),
+    }
+    recs = []
     for label_id, label in INT_TO_LABEL.items():
         mask = y_true == label_id
-        out[f"recall_{label.lower()}"] = float((pred[mask] == label_id).mean()) if mask.any() else math.nan
+        rec = float((y_pred[mask] == label_id).mean()) if mask.any() else math.nan
+        out[f"recall_{label.lower()}"] = rec
         out[f"n_{label.lower()}"] = int(mask.sum())
-    pred_resolved = np.isin(pred, list(RESOLVED))
-    true_resolved = np.isin(y_true, list(RESOLVED))
-    out["pred_resolved_coverage"] = float(pred_resolved.mean())
-    out["pred_resolved_notes"] = int(pred_resolved.sum())
-    out["strict_accuracy_on_pred_resolved"] = (
-        float((y_true[pred_resolved] == pred[pred_resolved]).mean()) if pred_resolved.any() else None
-    )
-    both = pred_resolved & true_resolved
-    out["binary_accuracy_true_resolved_selected"] = (
-        float((y_true[both] == pred[both]).mean()) if both.any() else None
-    )
-    out["true_resolved_selected"] = int(both.sum())
-    out["true_resolved_total"] = int(true_resolved.sum())
+        recs.append(rec)
+    out["min_recall"] = float(np.nanmin(recs))
+    out["h_to_nh"] = int(((y_true == 2) & (y_pred == 0)).sum())
+    out["nh_to_h"] = int(((y_true == 0) & (y_pred == 2)).sum())
+    out["cross_error"] = int(out["h_to_nh"] + out["nh_to_h"])
     return out
 
 
-def objective_key(m: dict[str, float | int | None], objective: str, target_coverage: float) -> tuple[float, ...]:
-    if objective == "accuracy":
-        return (float(m["accuracy"]), float(m["balanced_accuracy"]))
-    if objective == "balanced":
-        return (float(m["balanced_accuracy"]), float(m["accuracy"]))
-    if objective == "target_coverage":
-        acc = -1.0 if m["strict_accuracy_on_pred_resolved"] is None else float(m["strict_accuracy_on_pred_resolved"])
-        return (-abs(float(m["pred_resolved_coverage"]) - target_coverage), acc, float(m["balanced_accuracy"]))
-    if objective == "resolved_precision":
-        acc = -1.0 if m["strict_accuracy_on_pred_resolved"] is None else float(m["strict_accuracy_on_pred_resolved"])
-        return (acc, -abs(float(m["pred_resolved_coverage"]) - target_coverage), float(m["balanced_accuracy"]))
-    raise ValueError(objective)
+def add_meta_features(df: pd.DataFrame, fast_oof: pd.DataFrame) -> pd.DataFrame:
+    fast_oof = fast_oof.copy()
+    fast_oof["noteId"] = fast_oof["noteId"].astype(str)
+    keep = [
+        "noteId",
+        "nested_lr_summary_prob_not_helpful",
+        "nested_lr_summary_prob_nmr",
+        "nested_lr_summary_prob_helpful",
+        "nested_lr_full_agent_prob_not_helpful",
+        "nested_lr_full_agent_prob_nmr",
+        "nested_lr_full_agent_prob_helpful",
+    ]
+    fast_oof = fast_oof[[c for c in keep if c in fast_oof.columns]]
+
+    df = df.copy()
+    df["noteId"] = df["noteId"].astype(str)
+    df = df.merge(fast_oof, on="noteId", how="left")
+
+    for prefix in ["nested_lr_summary", "nested_lr_full_agent"]:
+        nh = df[f"{prefix}_prob_not_helpful"].astype(float)
+        nmr = df[f"{prefix}_prob_nmr"].astype(float)
+        h = df[f"{prefix}_prob_helpful"].astype(float)
+        probs = np.vstack([nh.to_numpy(), nmr.to_numpy(), h.to_numpy()]).T
+        safe = np.clip(probs, 1e-9, 1.0)
+        df[f"{prefix}_entropy"] = -(safe * np.log(safe)).sum(axis=1)
+        df[f"{prefix}_margin"] = np.sort(probs, axis=1)[:, -1] - np.sort(probs, axis=1)[:, -2]
+        df[f"{prefix}_resolved_mass"] = nh + h
+        df[f"{prefix}_signed_margin"] = h - nh
+        df[f"{prefix}_nmr_gap"] = nmr - np.maximum(nh, h)
+    return df
 
 
-@dataclass(frozen=True)
-class Spec:
-    c: float
-    class_weight: str | None
+def align_prob(model: Pipeline, X: pd.DataFrame) -> np.ndarray:
+    prob = model.predict_proba(X)
+    out = np.zeros((len(X), 3), dtype=float)
+    for i, cls in enumerate(model.named_steps["clf"].classes_):
+        out[:, int(cls)] = prob[:, i]
+    return out
 
 
-def nested_multiclass_lr(
-    df: pd.DataFrame,
-    feature_cols: list[str],
-    folds: int,
+def direct_pred_from_prob(prob: np.ndarray) -> np.ndarray:
+    return prob.argmax(axis=1).astype(int)
+
+
+def guarded_nmr_pred(prob: np.ndarray, t_nmr: float, t_resolved_mass: float, t_margin: float) -> np.ndarray:
+    p_nmr = prob[:, 1]
+    p_nh = prob[:, 0]
+    p_h = prob[:, 2]
+    out = prob.argmax(axis=1).astype(int)
+    resolved_mass = p_nh + p_h
+    margin = np.sort(prob, axis=1)[:, -1] - np.sort(prob, axis=1)[:, -2]
+    gate = (out != 1) & (p_nmr >= t_nmr) & (resolved_mass <= t_resolved_mass) & (margin <= t_margin)
+    out[gate] = 1
+    return out.astype(int)
+
+
+def score_key(m: dict[str, float | int]) -> tuple[float, ...]:
+    joint = 2.0 * m["accuracy"] * m["balanced_accuracy"] / max(m["accuracy"] + m["balanced_accuracy"], 1e-12)
+    return (m["recall_needs_more_ratings"], m["balanced_accuracy"], m["accuracy"], joint, m["min_recall"])
+
+
+def choose_spec(
+    X_train: pd.DataFrame,
+    y_train: np.ndarray,
     inner_folds: int,
     seed: int,
-    objective: str,
-    target_coverage: float,
-) -> tuple[np.ndarray, np.ndarray, list[dict]]:
-    y = df["true_label_3way"].to_numpy(dtype=int)
-    X = df[feature_cols]
-    pred = np.zeros(len(df), dtype=int)
-    prob_all = np.zeros((len(df), 3), dtype=float)
-    rows = []
-    outer = StratifiedKFold(n_splits=folds, shuffle=True, random_state=seed)
-    c_grid = [0.03, 0.1, 0.3, 1.0, 3.0, 10.0]
-    weights: list[str | None] = [None, "balanced"]
-    for fold, (train_idx, test_idx) in enumerate(outer.split(X, y), start=1):
-        X_train = X.iloc[train_idx].reset_index(drop=True)
-        y_train = y[train_idx]
-        inner = StratifiedKFold(n_splits=inner_folds, shuffle=True, random_state=seed + fold)
-        best = None
-        for c in c_grid:
-            for weight in weights:
-                oof_pred = np.zeros(len(train_idx), dtype=int)
-                for inner_train, inner_val in inner.split(X_train, y_train):
-                    model = make_lr(c, weight, multi_class=True)
-                    model.fit(X_train.iloc[inner_train], y_train[inner_train])
-                    oof_pred[inner_val] = model.predict(X_train.iloc[inner_val])
-                m = metrics(y_train, oof_pred)
-                key = objective_key(m, objective, target_coverage)
-                if best is None or key > best[0]:
-                    best = (key, Spec(c, weight), m)
-        spec = best[1]
-        model = make_lr(spec.c, spec.class_weight, multi_class=True)
-        model.fit(X.iloc[train_idx], y[train_idx])
-        fold_prob = model.predict_proba(X.iloc[test_idx])
-        fold_pred = model.predict(X.iloc[test_idx])
-        pred[test_idx] = fold_pred
-        # sklearn keeps classes sorted here, but align defensively.
-        aligned = np.zeros((len(test_idx), 3), dtype=float)
-        for pos, cls in enumerate(model.named_steps["clf"].classes_):
-            aligned[:, int(cls)] = fold_prob[:, pos]
-        prob_all[test_idx] = aligned
-        rows.append(
-            {
-                "fold": fold,
-                "objective": objective,
-                "c": spec.c,
-                "class_weight": spec.class_weight or "none",
-                **{f"inner_{k}": v for k, v in best[2].items()},
-                **{f"test_{k}": v for k, v in metrics(y[test_idx], fold_pred).items()},
-            }
-        )
-    return pred, prob_all, rows
+    acc_drop_max: float,
+) -> tuple[dict[str, float], dict[str, float | int]]:
+    t_nmr_grid = [0.46, 0.52, 0.58]
+    t_resolved_mass_grid = [0.56, 0.62]
+    t_margin_grid = [0.08, 0.12]
 
+    inner = StratifiedKFold(n_splits=inner_folds, shuffle=True, random_state=seed)
+    oof_prob = np.zeros((len(y_train), 3), dtype=float)
 
-@dataclass(frozen=True)
-class TwoStageSpec:
-    c_resolved: float
-    w_resolved: str | None
-    c_direction: float
-    w_direction: str | None
-    resolved_threshold: float
-    direction_threshold: float
+    for tr, va in inner.split(X_train, y_train):
+        model = make_lr(seed=seed)
+        model.fit(X_train.iloc[tr], y_train[tr])
+        oof_prob[va] = align_prob(model, X_train.iloc[va])
 
+    base_pred = direct_pred_from_prob(oof_prob)
+    base_m = metric(y_train, base_pred)
+    acc_floor = base_m["accuracy"] - acc_drop_max
 
-def pred_two_stage(res_prob: np.ndarray, help_prob: np.ndarray, rt: float, dt: float) -> np.ndarray:
-    out = np.full(len(res_prob), 1, dtype=int)
-    mask = res_prob >= rt
-    out[mask] = np.where(help_prob[mask] >= dt, 2, 0)
-    return out
-
-
-def threshold_search(
-    y: np.ndarray,
-    res_prob: np.ndarray,
-    help_prob: np.ndarray,
-    objective: str,
-    target_coverage: float,
-) -> tuple[float, float, dict]:
-    res_candidates = [float("inf")] + list(np.quantile(res_prob, np.linspace(0, 1, 101))) + list(np.unique(res_prob))
-    res_candidates = sorted(set(float(x) for x in res_candidates), reverse=True)
-    dir_candidates = np.arange(0.20, 0.81, 0.02)
     best = None
-    for rt in res_candidates:
-        for dt in dir_candidates:
-            pred = pred_two_stage(res_prob, help_prob, rt, float(dt))
-            m = metrics(y, pred)
-            key = objective_key(m, objective, target_coverage)
-            if best is None or key > best[0]:
-                best = (key, rt, float(dt), m)
-    assert best is not None
-    return best[1], best[2], best[3]
+    for t_nmr in t_nmr_grid:
+        for t_resolved_mass in t_resolved_mass_grid:
+            for t_margin in t_margin_grid:
+                pred = guarded_nmr_pred(oof_prob, float(t_nmr), float(t_resolved_mass), float(t_margin))
+                m = metric(y_train, pred)
+                if m["accuracy"] < acc_floor:
+                    continue
+                key = score_key(m)
+                if best is None or key > best[0]:
+                    best = (
+                        key,
+                        {
+                            "t_nmr": float(t_nmr),
+                            "t_resolved_mass": float(t_resolved_mass),
+                            "t_margin": float(t_margin),
+                            "base_acc_inner": float(base_m["accuracy"]),
+                            "base_balanced_inner": float(base_m["balanced_accuracy"]),
+                            "acc_floor_inner": float(acc_floor),
+                        },
+                        m,
+                    )
+
+    if best is None:
+        best = (
+            score_key(base_m),
+            {
+                "t_nmr": 1.1,
+                "t_resolved_mass": 0.0,
+                "t_margin": 0.0,
+                "base_acc_inner": float(base_m["accuracy"]),
+                "base_balanced_inner": float(base_m["balanced_accuracy"]),
+                "acc_floor_inner": float(acc_floor),
+            },
+            base_m,
+        )
+
+    return best[1], best[2]
 
 
-def nested_two_stage_lr(
+def nested_cv(
     df: pd.DataFrame,
     feature_cols: list[str],
     folds: int,
     inner_folds: int,
     seed: int,
-    objective: str,
-    target_coverage: float,
-) -> tuple[np.ndarray, list[dict]]:
+    acc_drop_max: float,
+) -> tuple[np.ndarray, np.ndarray, list[dict[str, float | int]]]:
     y = df["true_label_3way"].to_numpy(dtype=int)
     X = df[feature_cols]
-    pred = np.full(len(df), 1, dtype=int)
-    rows = []
     outer = StratifiedKFold(n_splits=folds, shuffle=True, random_state=seed)
-    c_grid = [0.1, 1.0, 10.0]
-    weights: list[str | None] = [None, "balanced"]
-    for fold, (train_idx, test_idx) in enumerate(outer.split(X, y), start=1):
-        X_train = X.iloc[train_idx].reset_index(drop=True)
-        y_train = y[train_idx]
-        inner = StratifiedKFold(n_splits=inner_folds, shuffle=True, random_state=seed + fold)
-        best = None
-        for c_res in c_grid:
-            for w_res in weights:
-                for c_dir in c_grid:
-                    for w_dir in weights:
-                        oof_res = np.zeros(len(train_idx), dtype=float)
-                        oof_help = np.full(len(train_idx), 0.5, dtype=float)
-                        for inner_train, inner_val in inner.split(X_train, (y_train != 1).astype(int)):
-                            model_res = make_lr(c_res, w_res, multi_class=False)
-                            model_res.fit(X_train.iloc[inner_train], (y_train[inner_train] != 1).astype(int))
-                            oof_res[inner_val] = model_res.predict_proba(X_train.iloc[inner_val])[:, 1]
-                            direction_mask = np.isin(y_train[inner_train], list(RESOLVED))
-                            if direction_mask.sum() > 0 and len(np.unique(y_train[inner_train][direction_mask])) == 2:
-                                model_dir = make_lr(c_dir, w_dir, multi_class=False)
-                                model_dir.fit(
-                                    X_train.iloc[inner_train].iloc[direction_mask],
-                                    (y_train[inner_train][direction_mask] == 2).astype(int),
-                                )
-                                oof_help[inner_val] = model_dir.predict_proba(X_train.iloc[inner_val])[:, 1]
-                        rt, dt, m = threshold_search(y_train, oof_res, oof_help, objective, target_coverage)
-                        key = objective_key(m, objective, target_coverage)
-                        if best is None or key > best[0]:
-                            best = (key, TwoStageSpec(c_res, w_res, c_dir, w_dir, rt, dt), m)
-        spec = best[1]
-        model_res = make_lr(spec.c_resolved, spec.w_resolved, multi_class=False)
-        model_res.fit(X.iloc[train_idx], (y[train_idx] != 1).astype(int))
-        direction_mask = np.isin(y[train_idx], list(RESOLVED))
-        model_dir = make_lr(spec.c_direction, spec.w_direction, multi_class=False)
-        model_dir.fit(X.iloc[train_idx].iloc[direction_mask], (y[train_idx][direction_mask] == 2).astype(int))
-        res_prob = model_res.predict_proba(X.iloc[test_idx])[:, 1]
-        help_prob = model_dir.predict_proba(X.iloc[test_idx])[:, 1]
-        fold_pred = pred_two_stage(res_prob, help_prob, spec.resolved_threshold, spec.direction_threshold)
-        pred[test_idx] = fold_pred
+    pred_base = np.zeros(len(df), dtype=int)
+    pred_guard = np.zeros(len(df), dtype=int)
+    rows: list[dict[str, float | int]] = []
+
+    for fold, (tr, te) in enumerate(outer.split(X, y), start=1):
+        spec, inner_m = choose_spec(
+            X.iloc[tr].reset_index(drop=True),
+            y[tr],
+            inner_folds=inner_folds,
+            seed=seed + fold,
+            acc_drop_max=acc_drop_max,
+        )
+
+        model = make_lr(seed=seed + fold)
+        model.fit(X.iloc[tr], y[tr])
+        prob = align_prob(model, X.iloc[te])
+        base_fold = direct_pred_from_prob(prob)
+        guard_fold = guarded_nmr_pred(prob, spec["t_nmr"], spec["t_resolved_mass"], spec["t_margin"])
+
+        pred_base[te] = base_fold
+        pred_guard[te] = guard_fold
+
+        base_test = metric(y[te], base_fold)
+        guard_test = metric(y[te], guard_fold)
         rows.append(
             {
                 "fold": fold,
-                "objective": objective,
-                "c_resolved": spec.c_resolved,
-                "w_resolved": spec.w_resolved or "none",
-                "c_direction": spec.c_direction,
-                "w_direction": spec.w_direction or "none",
-                "resolved_threshold": spec.resolved_threshold,
-                "direction_threshold": spec.direction_threshold,
-                **{f"inner_{k}": v for k, v in best[2].items()},
-                **{f"test_{k}": v for k, v in metrics(y[test_idx], fold_pred).items()},
+                "t_nmr": spec["t_nmr"],
+                "t_resolved_mass": spec["t_resolved_mass"],
+                "t_margin": spec["t_margin"],
+                "inner_base_acc": spec["base_acc_inner"],
+                "inner_base_balanced": spec["base_balanced_inner"],
+                "inner_acc_floor": spec["acc_floor_inner"],
+                **{f"inner_guard_{k}": v for k, v in inner_m.items()},
+                **{f"test_base_{k}": v for k, v in base_test.items()},
+                **{f"test_guard_{k}": v for k, v in guard_test.items()},
             }
         )
-    return pred, rows
 
-
-def majority_baselines(df: pd.DataFrame) -> dict[str, np.ndarray]:
-    shares = df[["vote_not_helpful", "vote_somewhat_helpful", "vote_helpful"]].to_numpy(dtype=float)
-    raw_majority = shares.argmax(axis=1)
-    # raw labels: 0=NH, 1=somewhat, 2=H; map somewhat to NMR as a naive official-schema baseline.
-    return {
-        "always_nmr": np.full(len(df), 1, dtype=int),
-        "raw_vote_majority_somewhat_as_nmr": raw_majority,
-        "raw_score_thresholds_0p33_0p67": np.where(df["mean_raw_score"].to_numpy() >= 2 / 3, 2, np.where(df["mean_raw_score"].to_numpy() <= 1 / 3, 0, 1)),
-        "raw_score_thresholds_0p25_0p75": np.where(df["mean_raw_score"].to_numpy() >= 0.75, 2, np.where(df["mean_raw_score"].to_numpy() <= 0.25, 0, 1)),
-    }
+    return pred_base, pred_guard, rows
 
 
 def main() -> int:
@@ -513,52 +489,54 @@ def main() -> int:
     df, feature_sets = build_features(run_dir)
     y = df["true_label_3way"].to_numpy(dtype=int)
     predictions = df[["noteId", "true_label_3way", "true_label_text"]].copy()
-    rows = []
-    fold_frames = []
 
-    for name, pred in majority_baselines(df).items():
-        predictions[name] = pred
-        rows.append({"method": name, "family": "baseline", **metrics(y, pred)})
+    fast_path = run_dir / "officialschema_nested_cv_fast_20260512" / "officialschema_nested_cv_fast_oof_predictions.csv"
+    if not fast_path.exists():
+        raise FileNotFoundError(f"Missing fast OOF predictions: {fast_path}")
+    fast_oof = pd.read_csv(fast_path, low_memory=False)
+    df = add_meta_features(df, fast_oof)
 
-    for feature_set_name in ["summary", "full_agent", "full_agent_plus_metadata"]:
-        cols = feature_sets[feature_set_name]
-        for objective in ["accuracy", "balanced"]:
-            name = f"multiclass_lr_{feature_set_name}_{objective}"
-            pred, prob, fold_rows = nested_multiclass_lr(
-                df, cols, args.folds, args.inner_folds, args.seed, objective, args.target_coverage
-            )
-            predictions[name] = pred
-            predictions[f"{name}_prob_not_helpful"] = prob[:, 0]
-            predictions[f"{name}_prob_nmr"] = prob[:, 1]
-            predictions[f"{name}_prob_helpful"] = prob[:, 2]
-            rows.append(
-                {
-                    "method": name,
-                    "family": "nested_multiclass_lr",
-                    "feature_set": feature_set_name,
-                    "objective": objective,
-                    "n_features": len(cols),
-                    **metrics(y, pred),
-                }
-            )
-            fold_frames.append(pd.DataFrame(fold_rows).assign(method=name))
-        for objective in ["target_coverage", "resolved_precision"]:
-            name = f"two_stage_lr_{feature_set_name}_{objective}"
-            pred, fold_rows = nested_two_stage_lr(
-                df, cols, args.folds, args.inner_folds, args.seed, objective, args.target_coverage
-            )
-            predictions[name] = pred
-            rows.append(
-                {
-                    "method": name,
-                    "family": "nested_two_stage_lr",
-                    "feature_set": feature_set_name,
-                    "objective": objective,
-                    "n_features": len(cols),
-                    **metrics(y, pred),
-                }
-            )
-            fold_frames.append(pd.DataFrame(fold_rows).assign(method=name))
+    meta_cols = [c for c in df.columns if c.startswith("nested_lr_")]
+    feature_cols = feature_sets["full_agent_plus_metadata"] + meta_cols
+
+    base_pred, guard_pred, fold_rows = nested_cv(
+        df=df,
+        feature_cols=feature_cols,
+        folds=args.folds,
+        inner_folds=args.inner_folds,
+        seed=args.seed,
+        acc_drop_max=args.acc_drop_max,
+    )
+
+    predictions["direct_mc_full_plus_meta_balanced"] = base_pred
+    predictions["guarded_nmr_gate_full_plus_meta"] = guard_pred
+
+    rows = [
+        {
+            "method": "direct_mc_full_plus_meta_balanced",
+            "family": "direct_multiclass",
+            "feature_set": "full_agent_plus_metadata_plus_meta_probs",
+            "objective": "balanced_accuracy",
+            "n_features": len(feature_cols),
+            "pred_resolved_coverage": float(np.isin(base_pred, [0, 2]).mean()),
+            "strict_accuracy_on_pred_resolved": float((y[np.isin(base_pred, [0, 2])] == base_pred[np.isin(base_pred, [0, 2])]).mean())
+            if np.isin(base_pred, [0, 2]).any()
+            else None,
+            **metric(y, base_pred),
+        },
+        {
+            "method": "guarded_nmr_gate_full_plus_meta",
+            "family": "guarded_nmr_gate",
+            "feature_set": "full_agent_plus_metadata_plus_meta_probs",
+            "objective": "nmr_recall_then_balanced_accuracy",
+            "n_features": len(feature_cols),
+            "pred_resolved_coverage": float(np.isin(guard_pred, [0, 2]).mean()),
+            "strict_accuracy_on_pred_resolved": float((y[np.isin(guard_pred, [0, 2])] == guard_pred[np.isin(guard_pred, [0, 2])]).mean())
+            if np.isin(guard_pred, [0, 2]).any()
+            else None,
+            **metric(y, guard_pred),
+        },
+    ]
 
     summary = pd.DataFrame(rows)
     for col in [
@@ -567,19 +545,33 @@ def main() -> int:
         "recall_not_helpful",
         "recall_needs_more_ratings",
         "recall_helpful",
+        "min_recall",
         "pred_resolved_coverage",
         "strict_accuracy_on_pred_resolved",
-        "binary_accuracy_true_resolved_selected",
     ]:
         summary[f"{col}_pct"] = pd.to_numeric(summary[col], errors="coerce") * 100.0
-    summary = summary.sort_values(["accuracy", "balanced_accuracy"], ascending=False)
+
+    base_acc = float(summary.loc[summary["method"] == "direct_mc_full_plus_meta_balanced", "accuracy_pct"].iloc[0])
+    base_bal = float(summary.loc[summary["method"] == "direct_mc_full_plus_meta_balanced", "balanced_accuracy_pct"].iloc[0])
+    base_nmr = float(summary.loc[summary["method"] == "direct_mc_full_plus_meta_balanced", "recall_needs_more_ratings_pct"].iloc[0])
+    summary["delta_accuracy_pct"] = summary["accuracy_pct"] - base_acc
+    summary["delta_balanced_accuracy_pct"] = summary["balanced_accuracy_pct"] - base_bal
+    summary["delta_nmr_recall_pct"] = summary["recall_needs_more_ratings_pct"] - base_nmr
+    summary = summary.sort_values(["accuracy", "balanced_accuracy"], ascending=[False, False]).reset_index(drop=True)
+
+    best = str(summary.iloc[0]["method"])
+    label_map = INT_TO_LABEL
+    base_confusion = pd.crosstab(predictions["true_label_text"], predictions["direct_mc_full_plus_meta_balanced"].map(label_map), margins=True)
+    guard_confusion = pd.crosstab(predictions["true_label_text"], predictions["guarded_nmr_gate_full_plus_meta"].map(label_map), margins=True)
+    best_confusion = pd.crosstab(predictions["true_label_text"], predictions[best].map(label_map), margins=True)
+
     df.to_csv(out_dir / "officialschema_feature_table.csv", index=False, encoding="utf-8-sig")
     predictions.to_csv(out_dir / "officialschema_nested_cv_oof_predictions.csv", index=False, encoding="utf-8-sig")
     summary.to_csv(out_dir / "officialschema_nested_cv_summary.csv", index=False, encoding="utf-8-sig")
-    if fold_frames:
-        pd.concat(fold_frames, ignore_index=True).to_csv(
-            out_dir / "officialschema_nested_cv_fold_metrics.csv", index=False, encoding="utf-8-sig"
-        )
+    pd.DataFrame(fold_rows).to_csv(out_dir / "officialschema_nested_cv_fold_metrics.csv", index=False, encoding="utf-8-sig")
+    base_confusion.to_csv(out_dir / "base_confusion.csv", encoding="utf-8-sig")
+    guard_confusion.to_csv(out_dir / "guard_confusion.csv", encoding="utf-8-sig")
+    best_confusion.to_csv(out_dir / "best_confusion.csv", encoding="utf-8-sig")
 
     metadata = {
         "run_dir": str(run_dir),
@@ -589,8 +581,11 @@ def main() -> int:
         "inner_folds": int(args.inner_folds),
         "seed": int(args.seed),
         "target_coverage": float(args.target_coverage),
+        "acc_drop_max": float(args.acc_drop_max),
         "true_distribution": df["true_label_text"].value_counts().to_dict(),
-        "feature_sets": {k: len(v) for k, v in feature_sets.items()},
+        "feature_set": "full_agent_plus_metadata_plus_meta_probs",
+        "n_features": int(len(feature_cols)),
+        "fast_oof_path": str(fast_path),
         "best_by_accuracy": summary.iloc[0].to_dict(),
     }
     (out_dir / "run_metadata.json").write_text(json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -599,14 +594,18 @@ def main() -> int:
         "method",
         "accuracy_pct",
         "balanced_accuracy_pct",
+        "delta_accuracy_pct",
+        "delta_balanced_accuracy_pct",
+        "delta_nmr_recall_pct",
         "pred_resolved_coverage_pct",
         "strict_accuracy_on_pred_resolved_pct",
-        "binary_accuracy_true_resolved_selected_pct",
         "recall_not_helpful_pct",
         "recall_needs_more_ratings_pct",
         "recall_helpful_pct",
     ]
-    print(summary[cols].head(30).to_string(index=False))
+    print(summary[cols].to_string(index=False))
+    print("\nBest confusion matrix:")
+    print(best_confusion.to_string())
     return 0
 
 
